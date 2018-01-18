@@ -536,15 +536,16 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_pathom_core_engine">2. Pathom Core Engine</a>
 <ul class="sectlevel2">
 <li><a href="#_readers">2.1. Readers</a></li>
-<li><a href="#_error_handling">2.2. Error handling</a></li>
-<li><a href="#_dispatch_helpers">2.3. Dispatch helpers</a></li>
-<li><a href="#_request_caching">2.4. Request caching</a></li>
-<li><a href="#_plugins">2.5. Plugins</a></li>
-<li><a href="#_testing_todo">2.6. Testing #TODO</a></li>
-<li><a href="#_placeholders">2.7. Placeholders</a></li>
-<li><a href="#_profiling">2.8. Profiling</a></li>
-<li><a href="#_path_tracking">2.9. Path tracking</a></li>
-<li><a href="#_async_parsing_todo">2.10. Async parsing #TODO</a></li>
+<li><a href="#_entities">2.2. Entities</a></li>
+<li><a href="#_error_handling">2.3. Error handling</a></li>
+<li><a href="#_dispatch_helpers">2.4. Dispatch helpers</a></li>
+<li><a href="#_request_caching">2.5. Request caching</a></li>
+<li><a href="#_plugins">2.6. Plugins</a></li>
+<li><a href="#_testing_todo">2.7. Testing #TODO</a></li>
+<li><a href="#_placeholders">2.8. Placeholders</a></li>
+<li><a href="#_profiling">2.9. Profiling</a></li>
+<li><a href="#_path_tracking">2.10. Path tracking</a></li>
+<li><a href="#_async_parsing_todo">2.11. Async parsing #TODO</a></li>
 </ul>
 </li>
 <li><a href="#_pathom_connect">3. Pathom Connect</a>
@@ -1033,7 +1034,315 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_error_handling"><a class="anchor" href="#_error_handling"></a><a class="link" href="#_error_handling">2.2. Error handling</a></h3>
+<h3 id="_entities"><a class="anchor" href="#_entities"></a><a class="link" href="#_entities">2.2. Entities</a></h3>
+<div class="sect3">
+<h4 id="_abstract"><a class="anchor" href="#_abstract"></a><a class="link" href="#_abstract">2.2.1. Abstract</a></h4>
+<div class="paragraph">
+<p>Entities are one of the most important concepts to grasp about pathom. If you think of nodes on a graph, a node has its information and the connections with other nodes. Using this as a parallel, the <code>entity</code> in pathom is the representation of the current node value; this is where you are taking the information to navigate on the graph. The entity is usually a Clojure map, but that&#8217;s not a hard constraint, you can use whatever you want to represent the current entity. You can use whatever you want to represent the current entity as long as it is something from which you can use to derive the information.</p>
+</div>
+<div class="paragraph">
+<p>Pathom uses a well-known key in the environment to track the "current" entity (::p/entity). This makes it easier to write more reusable and flexible readers as we&#8217;ll see later.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_using_entity"><a class="anchor" href="#_using_entity"></a><a class="link" href="#_using_entity">2.2.2. Using entity</a></h4>
+<div class="paragraph">
+<p>To get the current entity use the <code>p/entity</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom-docs.using-entity</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">defn</span> <span class="function">read-attr</span> [env]
+  (<span class="keyword">let</span> [e (p/entity env)
+        k (<span class="keyword">get-in</span> env [<span class="symbol">:ast</span> <span class="symbol">:dispatch-key</span>])]
+    (<span class="keyword">if</span> (<span class="keyword">contains?</span> e k)
+      (<span class="keyword">get</span> e k)
+      <span class="symbol">::p/continue</span>)))
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [read-attr]})]}))
+
+<span class="comment">; we send the entity using ::p/entity key on environment</span>
+(parser {<span class="symbol">::p/entity</span> <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Rick</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">60</span>}} [<span class="symbol">:character/name</span> <span class="symbol">:character/age</span> <span class="symbol">:character/foobar</span>])
+<span class="comment">; =&gt; #:character{:name &quot;Rick&quot;, :age 60, :foobar :com.wsscode.pathom.core/not-found}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When traversing your data graph (via the query) the "current" entity/node is exactly the desired source of information for the attributes of that element of the graph query (known in the parser as the <code>dispatch-key</code>). Moving the "pointer to the current data node" as you move through the graph query causes the two relational graphs to be walked at the same time.</p>
+</div>
+<div class="paragraph">
+<p>It is very common to read plain attributes (each of which will trigger a dispatch with that attribute in <code>key</code>) from maps,  so we have a helper for that called <code>map-reader</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="MAP_READER"><a class="anchor" href="#MAP_READER"></a><a class="link" href="#MAP_READER">2.2.3. Map reader</a></h4>
+<div class="paragraph">
+<p>Let&#8217;s re-write our previous example, now using the <code>map-reader</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom-docs.using-entity-map-reader</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [p/map-reader]})]}))
+
+<span class="comment">; we send the entity using ::p/entity key on environment</span>
+(parser {<span class="symbol">::p/entity</span> <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Rick</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">60</span>}}
+        [<span class="symbol">:character/name</span> <span class="symbol">:character/age</span> <span class="symbol">:character/foobar</span>])
+<span class="comment">; =&gt; #:character{:name &quot;Rick&quot;, :age 60, :foobar :com.wsscode.pathom.core/not-found}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>map-reader</code> has the additional advantage of understanding how to walk a map that has a tree shape that already "fits" our query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom-docs.using-entity-map-reader</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> p/map-reader})]}))
+
+<span class="comment">; we send the entity using ::p/entity key on environment</span>
+(parser {<span class="symbol">::p/entity</span> <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Rick</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">60</span>
+                                <span class="symbol">:family</span> [<span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Morty</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">14</span>}
+                                         <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Summer</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">17</span>}]
+                                <span class="symbol">:first-episode</span> <span class="error">#</span><span class="symbol">:episode</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Pilot</span><span class="delimiter">&quot;</span></span> <span class="symbol">:season</span> <span class="integer">1</span> <span class="symbol">:number</span> <span class="integer">1</span>}}}
+        [<span class="symbol">:character/name</span> <span class="symbol">:character/age</span>
+         {<span class="symbol">:character/family</span> [<span class="symbol">:character/age</span>]}
+         {<span class="symbol">:character/first-episode</span> [<span class="symbol">:episode/name</span> <span class="symbol">:episode/number</span>]}])
+<span class="comment">; =&gt;</span>
+<span class="comment">; #:character{:name &quot;Rick&quot;,</span>
+<span class="comment">;             :age 60,</span>
+<span class="comment">;             :family [#:character{:age 14} #:character{:age 17}],</span>
+<span class="comment">;             :first-episode #:episode{:name &quot;Pilot&quot;, :number 1}}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>I encourage you to check the <code>map-reader</code> implementation, it&#8217;s not much longer than our previous one, and will give you a better understanding of how it runs.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_understanding_pathom_joins"><a class="anchor" href="#_understanding_pathom_joins"></a><a class="link" href="#_understanding_pathom_joins">2.2.4. Understanding pathom joins</a></h4>
+<div class="paragraph">
+<p>Now that we saw some ways to work with the current entity, it&#8217;s time to see how to navigate between them. You can look at the function <code>p/join</code> as a way to set the current entity. The core principle of <code>join</code> can be implemented as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">defn</span> <span class="function">join</span> [entity {<span class="symbol">:keys</span> [parser query] <span class="symbol">:as</span> env}]
+  (parser (<span class="keyword">assoc</span> env <span class="symbol">::p/entity</span> entity) query))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It simply does a recursive step for the given entity on the environment&#8217;s current subquery.</p>
+</div>
+<div class="paragraph">
+<p>The pathom implementation handles the <strong>empty sub-query</strong> case (it returns the full entity) and handles the special <code>*</code> value (so you can combine the whole entity + extra computed attributes). Pathom <code>join</code> also handles union queries cases, but more on that later.</p>
+</div>
+<div class="paragraph">
+<p>The following example demonstrates how to use the <code>map-reader</code> in combination with computed attributes and joins.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom-docs.using-entity-map-reader</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+<span class="comment">; let's get rick into a variable</span>
+(<span class="keyword">def</span> <span class="function">rick</span>
+  <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span>          <span class="string"><span class="delimiter">&quot;</span><span class="content">Rick</span><span class="delimiter">&quot;</span></span>
+              <span class="symbol">:age</span>           <span class="integer">60</span>
+              <span class="symbol">:family</span>        [<span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Morty</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">14</span>}
+                              <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Summer</span><span class="delimiter">&quot;</span></span> <span class="symbol">:age</span> <span class="integer">17</span>}]
+              <span class="symbol">:first-episode</span> <span class="error">#</span><span class="symbol">:episode</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Pilot</span><span class="delimiter">&quot;</span></span> <span class="symbol">:season</span> <span class="integer">1</span> <span class="symbol">:number</span> <span class="integer">1</span>}})
+
+<span class="comment">; an external data set so we can do a join</span>
+(<span class="keyword">def</span> <span class="function">char-name-&gt;voice</span>
+  {<span class="string"><span class="delimiter">&quot;</span><span class="content">Rick</span><span class="delimiter">&quot;</span></span>   <span class="error">#</span><span class="symbol">:actor</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Justin Roiland</span><span class="delimiter">&quot;</span></span> <span class="symbol">:nationality</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">US</span><span class="delimiter">&quot;</span></span>}
+   <span class="string"><span class="delimiter">&quot;</span><span class="content">Morty</span><span class="delimiter">&quot;</span></span>  <span class="error">#</span><span class="symbol">:actor</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Justin Roiland</span><span class="delimiter">&quot;</span></span> <span class="symbol">:nationality</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">US</span><span class="delimiter">&quot;</span></span>}
+   <span class="string"><span class="delimiter">&quot;</span><span class="content">Summer</span><span class="delimiter">&quot;</span></span> <span class="error">#</span><span class="symbol">:actor</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Spencer Grammer</span><span class="delimiter">&quot;</span></span> <span class="symbol">:nationality</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">US</span><span class="delimiter">&quot;</span></span>}})
+
+<span class="comment">; this is our computed attributes, stuff to look for when the entity doesn't contain the requested</span>
+<span class="comment">; attribute</span>
+(<span class="keyword">def</span> <span class="function">computed</span>
+  {<span class="symbol">:character/voice</span>
+   (<span class="keyword">fn</span> [env]
+     (<span class="keyword">let</span> [{<span class="symbol">:character/keys</span> [<span class="keyword">name</span>]} (p/entity env)
+           voice (<span class="keyword">get</span> char-name-&gt;voice <span class="keyword">name</span>)]
+       (p/join voice env)))})
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  <span class="comment">; note we have both readers now, map and computed</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [p/map-reader computed]})]}))
+
+(parser {<span class="symbol">::p/entity</span> rick}
+        '[<span class="symbol">:character/name</span>
+          <span class="comment">; the join enables us to query exactly what we need from the node</span>
+          {<span class="symbol">:character/voice</span> [<span class="symbol">:actor/name</span>]}
+          <span class="comment">; two new things going on here, the * will ask for all attributes on the family nodes</span>
+          <span class="comment">; also by not specifying the query for :character/voice it will return the entity itself</span>
+          {<span class="symbol">:character/family</span> [<span class="keyword">*</span> <span class="symbol">:character/voice</span>]}])</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_attribute_dependency"><a class="anchor" href="#_attribute_dependency"></a><a class="link" href="#_attribute_dependency">2.2.5. Attribute dependency</a></h4>
+<div class="paragraph">
+<p>It is possible that the current entity will need to obtain some of its information from various sources. For example, in some cases, a computed attribute will itself need to re-invoke the processing chain to compute some subquery attribute. This can be done using <code>entity</code> with a second argument as shown in the following example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">pathom-docs.entity-attribute-dependency</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">computed</span>
+  {<span class="symbol">:greet</span>
+   (<span class="keyword">fn</span> [env]
+     (<span class="keyword">let</span> [{<span class="symbol">:character/keys</span> [<span class="keyword">name</span>]} (p/entity env)]
+       (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello </span><span class="delimiter">&quot;</span></span> <span class="keyword">name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">!</span><span class="delimiter">&quot;</span></span>)))
+
+   <span class="symbol">:invite</span>
+   (<span class="keyword">fn</span> [env]
+     <span class="comment">; the invite requires the computed property `:greet`, so we can send a query</span>
+     <span class="comment">; to the p/entity to enforce the query to be realized with the entity, making</span>
+     <span class="comment">; othewise it would not be available</span>
+     (<span class="keyword">let</span> [{<span class="symbol">:keys</span> [greet]} (p/entity env [<span class="symbol">:greet</span>])]
+       (<span class="keyword">str</span> greet <span class="string"><span class="delimiter">&quot;</span><span class="content"> Come to visit us in Neverland!</span><span class="delimiter">&quot;</span></span>)))})
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [p/map-reader
+                                                     computed]})]}))
+
+(parser {<span class="symbol">::p/entity</span> <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Mary</span><span class="delimiter">&quot;</span></span>}}
+        [<span class="symbol">:invite</span>])
+<span class="comment">; =&gt; {:invite &quot;Hello Mary! Come to visit us in Neverland!&quot;}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that this works by recursively invoking the parser.</p>
+</div>
+<div class="paragraph">
+<p>There is a variant <code>p/entity!</code> that raises an error if your desired attributes are not found. It&#8217;s recommended to use the enforced version if you need the given attributes, as it will give your user a better error message.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">pathom-docs.entity-attribute-enforce</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">computed</span>
+  {<span class="symbol">:greet</span>
+   (<span class="keyword">fn</span> [env]
+     <span class="comment">; enfore the character/name to be present, otherwise raises error, try removing</span>
+     <span class="comment">; the attribute from the entity and see what happens</span>
+     (<span class="keyword">let</span> [<span class="keyword">name</span> (p/entity-attr! env <span class="symbol">:character/name</span>)]
+       (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello </span><span class="delimiter">&quot;</span></span> <span class="keyword">name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">!</span><span class="delimiter">&quot;</span></span>)))
+
+   <span class="symbol">:invite</span>
+   (<span class="keyword">fn</span> [env]
+     <span class="comment">; now we are enforcing the attribute to be available, otherwise raise an error</span>
+     <span class="comment">; try changing the :greet to :greete and run the file, you will see the error</span>
+     (<span class="keyword">let</span> [greet (p/entity-attr! env <span class="symbol">:greet</span>)]
+       (<span class="keyword">str</span> greet <span class="string"><span class="delimiter">&quot;</span><span class="content"> Come to visit us in Neverland!</span><span class="delimiter">&quot;</span></span>)))})
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [p/map-reader
+                                                     computed]})]}))
+
+(parser {<span class="symbol">::p/entity</span> <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Mary</span><span class="delimiter">&quot;</span></span>}}
+        [<span class="symbol">:invite</span>])
+<span class="comment">; =&gt; {:invite &quot;Hello Mary! Come to visit us in Neverland!&quot;}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the parse fails on an enforced attribute you will get an exception. For example, if the current entity were <code>#:character{:nam "Mary"}</code> we&#8217;d see:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">CompilerException clojure.lang.ExceptionInfo<span class="error">:</span> Entity attributes #{<span class="symbol">:character/name</span>} could <span class="keyword">not</span> be realized <span class="error">#</span><span class="symbol">:com.wsscode.pathom.core</span>{<span class="symbol">:entity</span> <span class="error">#</span><span class="symbol">:character</span>{<span class="symbol">:nam</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Mary</span><span class="delimiter">&quot;</span></span>}, <span class="symbol">:path</span> [<span class="symbol">:invite</span> <span class="symbol">:greet</span>], <span class="symbol">:missing-attributes</span> #{<span class="symbol">:character/name</span>}}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Another important point to remember about computed attributes: if they require IO or intense computation you should do some caching to improve parsing performance, remember they can be called many times for a given query depending on your data interdependency. See [[Request caching|Request caching]] for more details on that.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_union_queries"><a class="anchor" href="#_union_queries"></a><a class="link" href="#_union_queries">2.2.6. Union queries</a></h4>
+<div class="paragraph">
+<p>Sometimes we need to handle heterogeneous nodes, nodes that depending on its type you want a different query. Union queries solve these cases. A common place for union queries are searching, let&#8217;s see an example where a search can be a user, a movie or a book.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">pathom-docs.entity-union</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">search-results</span>
+  [{<span class="symbol">:type</span> <span class="symbol">:user</span>
+    <span class="symbol">:user/name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Jack Sparrow</span><span class="delimiter">&quot;</span></span>}
+   {<span class="symbol">:type</span> <span class="symbol">:movie</span>
+    <span class="symbol">:movie/title</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Ted</span><span class="delimiter">&quot;</span></span>
+    <span class="symbol">:movie/year</span> <span class="integer">2012</span>}
+   {<span class="symbol">:type</span> <span class="symbol">:book</span>
+    <span class="symbol">:book/title</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">The Joy of Clojure</span><span class="delimiter">&quot;</span></span>}])
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [p/map-reader]})]}))
+
+(parser {<span class="symbol">::p/entity</span> {<span class="symbol">:search</span> search-results}
+         <span class="comment">; here we set where pathom should look on the entity to determine the union path</span>
+         <span class="symbol">::p/union-path</span> <span class="symbol">:type</span>}
+        [{<span class="symbol">:search</span> {<span class="symbol">:user</span> [<span class="symbol">:user/name</span>]
+                   <span class="symbol">:movie</span> [<span class="symbol">:movie/title</span>]
+                   <span class="symbol">:book</span> [<span class="symbol">:book/title</span>]}}])</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Of course, unions need to have a way to determine which path to go based on the entity at hand. In the example above we used the <code>:type</code> (a key on the entity) to determine which branch to follow.
+The value of <code>::p/union-path</code> can be a keyword (from something inside entity or a computed attribute) or a function (that takes <code>env</code> and returns the correct key (type) to use for the union query).</p>
+</div>
+<div class="paragraph">
+<p>If you want <code>::p/union-path</code> to be more contextual you can of course set it in the <code>env</code> during the join process, as in the next example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">pathom-docs.entity-union-contextual</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">search-results</span>
+  [{<span class="symbol">:type</span> <span class="symbol">:user</span>
+    <span class="symbol">:user/name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Jack Sparrow</span><span class="delimiter">&quot;</span></span>}
+   {<span class="symbol">:type</span> <span class="symbol">:movie</span>
+    <span class="symbol">:movie/title</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Ted</span><span class="delimiter">&quot;</span></span>
+    <span class="symbol">:movie/year</span> <span class="integer">2012</span>}
+   {<span class="symbol">:type</span> <span class="symbol">:book</span>
+    <span class="symbol">:book/title</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">The Joy of Clojure</span><span class="delimiter">&quot;</span></span>}])
+
+(<span class="keyword">def</span> <span class="function">search</span>
+  {<span class="symbol">:search</span>
+   (<span class="keyword">fn</span> [env]
+     <span class="comment">; join-seq is the same as join, but for sequences, note we set the ::p/union-path</span>
+     <span class="comment">; here. This is more common since the *method* of determining type will vary for</span>
+     <span class="comment">; different queries and data.</span>
+     (p/join-seq (<span class="keyword">assoc</span> env <span class="symbol">::p/union-path</span> <span class="symbol">:type</span>) search-results))})
+
+(<span class="keyword">def</span> <span class="function">parser</span>
+  (p/parser {<span class="symbol">::p/plugins</span> [(p/env-plugin {<span class="symbol">::p/reader</span> [search
+                                                     p/map-reader]})]}))
+
+(parser {}
+        [{<span class="symbol">:search</span> {<span class="symbol">:user</span> [<span class="symbol">:user/name</span>]
+                   <span class="symbol">:movie</span> [<span class="symbol">:movie/title</span>]
+                   <span class="symbol">:book</span> [<span class="symbol">:book/title</span>]}}])</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is something beautiful about having an immutable environment; you can make changes with confidence that it will not affect indirect points of the parsing process.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_error_handling"><a class="anchor" href="#_error_handling"></a><a class="link" href="#_error_handling">2.3. Error handling</a></h3>
 <div class="paragraph">
 <p>By default, pathom parser will stop if some exception occurs during the parsing process. This is often undesirable if some node fails you still can return the other ones that succeed. You can use the <code>error-handler-plugin</code>. This plugin will wrap each read call with a try-catch block, and in case an error occurs, a value of <code>::p/reader-error</code> will be placed in that node, while details of it will go in a separate tree, but at the same path. Better an example to demonstrate:</p>
 </div>
@@ -1122,7 +1431,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fail_fast"><a class="anchor" href="#_fail_fast"></a><a class="link" href="#_fail_fast">2.2.1. Fail fast</a></h4>
+<h4 id="_fail_fast"><a class="anchor" href="#_fail_fast"></a><a class="link" href="#_fail_fast">2.3.1. Fail fast</a></h4>
 <div class="paragraph">
 <p>Having each node being caught is great for the UI, but not so much for testing. During testing you probably prefer the parser to blow up as fast as possible so you don&#8217;t accumulate a bunch of errors that get impossible to read. Having to create a different parser to remove the <code>error-handler-plugin</code> can be annoying, so there is an option to solve that. Send the key <code>::p/fail-fast?</code> as true in the environment, and the try/catch will not be done, making it fail as soon as an exception fires, for example, using our previous parser:</p>
 </div>
@@ -1137,7 +1446,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_dispatch_helpers"><a class="anchor" href="#_dispatch_helpers"></a><a class="link" href="#_dispatch_helpers">2.3. Dispatch helpers</a></h3>
+<h3 id="_dispatch_helpers"><a class="anchor" href="#_dispatch_helpers"></a><a class="link" href="#_dispatch_helpers">2.4. Dispatch helpers</a></h3>
 <div class="paragraph">
 <p>Using multi-methods is a good way to make open readers, <code>pathom</code> provides helpers for two common dispatch strategies:
 <code>key-dispatch</code> and <code>entity-dispatch</code>. Here is a pattern that I often use on parsers:</p>
@@ -1198,7 +1507,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_request_caching"><a class="anchor" href="#_request_caching"></a><a class="link" href="#_request_caching">2.4. Request caching</a></h3>
+<h3 id="_request_caching"><a class="anchor" href="#_request_caching"></a><a class="link" href="#_request_caching">2.5. Request caching</a></h3>
 <div class="paragraph">
 <p>As your queries grow, there are more and more optimizations that you can do avoid unnecessary IO or heavy computations. Here we are going to talk about a <code>request cache</code>, which is a fancy name for an atom that is initialized on every query and stays on the environment so you can share the cache across nodes. Let&#8217;s see how we can use that to speed up our query processing:</p>
 </div>
@@ -1254,7 +1563,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_plugins"><a class="anchor" href="#_plugins"></a><a class="link" href="#_plugins">2.5. Plugins</a></h3>
+<h3 id="_plugins"><a class="anchor" href="#_plugins"></a><a class="link" href="#_plugins">2.6. Plugins</a></h3>
 <div class="paragraph">
 <p>Since <code>1.0.0-beta-8</code>, pathom included a plugin support. Plugins set code that wraps some of pathom operations, a plugin is a map where you bind keys from event names to functions. They work on <code>wrap</code> fashion, kind like <code>ring</code> wrappers. Here is what a plugin looks like:</p>
 </div>
@@ -1301,7 +1610,7 @@ still the same.</p>
 <p>The plugin engine replaces the old <code>process-reader</code> in a much more powerful way. If you want to check a real example look for the source for the built-in plugins, they are quite small and yet powerful tools (grep for <code>-plugin</code> on the repository to find all of them).</p>
 </div>
 <div class="sect3">
-<h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">2.5.1. Shard switch</a></h4>
+<h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">2.6.1. Shard switch</a></h4>
 <div class="paragraph">
 <p>For a more practical example, let&#8217;s say we are routing in a micro-service architecture and our parser needs to be shard-aware. Let&#8217;s write a plugin that anytime it sees a <code>:shard</code> param on a query; and it will update the <code>:shard</code> attribute on the environment and send it now, providing that shard information for any node down the line.</p>
 </div>
@@ -1357,11 +1666,11 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_todo"><a class="anchor" href="#_testing_todo"></a><a class="link" href="#_testing_todo">2.6. Testing #TODO</a></h3>
+<h3 id="_testing_todo"><a class="anchor" href="#_testing_todo"></a><a class="link" href="#_testing_todo">2.7. Testing #TODO</a></h3>
 
 </div>
 <div class="sect2">
-<h3 id="_placeholders"><a class="anchor" href="#_placeholders"></a><a class="link" href="#_placeholders">2.7. Placeholders</a></h3>
+<h3 id="_placeholders"><a class="anchor" href="#_placeholders"></a><a class="link" href="#_placeholders">2.8. Placeholders</a></h3>
 <div class="paragraph">
 <p>There is one issue that some people stumbled upon while using Om.next; the problem happens when you need to display two or more different views of the same item as siblings (regarding query arrangement, not necessarily DOM siblings), how do you make this query?</p>
 </div>
@@ -1438,7 +1747,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_profiling"><a class="anchor" href="#_profiling"></a><a class="link" href="#_profiling">2.8. Profiling</a></h3>
+<h3 id="_profiling"><a class="anchor" href="#_profiling"></a><a class="link" href="#_profiling">2.9. Profiling</a></h3>
 <div class="paragraph">
 <p>It&#8217;s good to know how your queries are performing, and breaking it down by nodes is an excellent level to reason about how your queries are doing. Pathom provides a plugin to make this measurement easy to do:</p>
 </div>
@@ -1527,7 +1836,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_path_tracking"><a class="anchor" href="#_path_tracking"></a><a class="link" href="#_path_tracking">2.9. Path tracking</a></h3>
+<h3 id="_path_tracking"><a class="anchor" href="#_path_tracking"></a><a class="link" href="#_path_tracking">2.10. Path tracking</a></h3>
 <div class="paragraph">
 <p>As you go deep in your parser <code>pathom</code> track record of the current path taken, it&#8217;s available at <code>::p/path</code> at any time. It&#8217;s a vector containing the current path from the root, the current main use for it is regarding error reporting and profiling.</p>
 </div>
@@ -1557,7 +1866,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_async_parsing_todo"><a class="anchor" href="#_async_parsing_todo"></a><a class="link" href="#_async_parsing_todo">2.10. Async parsing #TODO</a></h3>
+<h3 id="_async_parsing_todo"><a class="anchor" href="#_async_parsing_todo"></a><a class="link" href="#_async_parsing_todo">2.11. Async parsing #TODO</a></h3>
 
 </div>
 </div>
@@ -1797,7 +2106,7 @@ still the same.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-18 17:44:25 -02
+Last updated 2018-01-18 18:48:18 -02
 </div>
 </div>
 </body>
