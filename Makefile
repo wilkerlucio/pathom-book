@@ -3,8 +3,7 @@
 #   - Gems: asciidoctor, asciidoctor-diagram, and coderay
 # then run `make`
 
-book: docs/index.html
+book: docs/DevelopersGuide.html
 
-docs/index.html: docs/*.adoc
-	bundle exec asciidoctor -o docs/index.html -b html5 -r asciidoctor-diagram docs/DevelopersGuide.adoc
-
+docs/DevelopersGuide.html: docs/*.adoc
+	bundle exec asciidoctor -o docs/DevelopersGuide.html -b html5 -r asciidoctor-diagram docs/DevelopersGuide.adoc

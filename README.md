@@ -1,3 +1,3 @@
-# shadow-cljs User's Guide
+# Pathom user guide
 
-See https://shadow-cljs.github.io/docs/UsersGuide.html
+See https://wilkerlucio.github.io/pathom-book/DevelopersGuide.html
