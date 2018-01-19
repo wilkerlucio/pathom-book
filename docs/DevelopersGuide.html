@@ -538,7 +538,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_readers">2.1. Readers</a></li>
 <li><a href="#_entities">2.2. Entities</a></li>
 <li><a href="#_error_handling">2.3. Error handling</a></li>
-<li><a href="#_dispatch_helpers">2.4. Dispatch helpers</a></li>
+<li><a href="#dispatch-helpers">2.4. Dispatch helpers</a></li>
 <li><a href="#_request_caching">2.5. Request caching</a></li>
 <li><a href="#_plugins">2.6. Plugins</a></li>
 <li><a href="#_testing_todo">2.7. Testing #TODO</a></li>
@@ -603,12 +603,16 @@ a hello world parser with pathom:</p>
 </li>
 <li>
 <p><strong>Computed attributes</strong>: when the desired key is not present on the entity map, we try to compute it from one (or many) other readers, those readers are usually maps (closed sets of attributes) or multimethods (open sets of attributes), and they have are configured to handle the keys by doing some process/computation. This one can be broken down into 2 categories:</p>
-</li>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
 <li>
 <p><strong>Globals</strong>: if the computed attribute doesn&#8217;t depend on any data from the entity, it is global, and can be called from any point of the graph.</p>
 </li>
 <li>
 <p><strong>Derived attributes</strong>: when the computed attribute depends on some property of the current entity, we call it a derivation. Derivations are often relationship mappings, like navigating to the <code>:customer/address</code>, or to a sub-list like <code>:customer/friends</code>, or just a computed property (apply some algorithm in a property to create a derived one).</p>
+</li>
+</ol>
+</div>
 </li>
 <li>
 <p><strong>Entity lookups</strong>: This is the om.next default way to look for an entity on the graph using the ident syntax (eg: <code>[:customer/id 123]</code>).</p>
@@ -773,7 +777,7 @@ still the same.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>When you understand those building blocks, all you graph can be written with that. If your app is larger than a demo, instead of using a fixed map for the <code>computed</code>, you can use the <code>p/key-dispatch</code> which is like the <code>p/entity-dispatch</code> but for <code>dispatch-keys</code> (like the map keys). By doing that you can leave the nodes open for extension, and then split your definitions across multiple files. An example of that is available at [[dispatch helpers page|Dispatch helpers]].</p>
+<p>When you understand those building blocks, all you graph can be written with that. If your app is larger than a demo, instead of using a fixed map for the <code>computed</code>, you can use the <code>p/key-dispatch</code> which is like the <code>p/entity-dispatch</code> but for <code>dispatch-keys</code> (like the map keys). By doing that you can leave the nodes open for extension, and then split your definitions across multiple files. An example of that is available at <a href="#dispatch-helpers">dispatch helpers page</a>.</p>
 </div>
 <div class="paragraph">
 <p>Here is the complete code for the example:</p>
@@ -1077,7 +1081,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="MAP_READER"><a class="anchor" href="#MAP_READER"></a><a class="link" href="#MAP_READER">2.2.3. Map reader</a></h4>
+<h4 id="map-reader"><a class="anchor" href="#map-reader"></a><a class="link" href="#map-reader">2.2.3. Map reader</a></h4>
 <div class="paragraph">
 <p>Let&#8217;s re-write our previous example, now using the <code>map-reader</code>:</p>
 </div>
@@ -1446,7 +1450,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_dispatch_helpers"><a class="anchor" href="#_dispatch_helpers"></a><a class="link" href="#_dispatch_helpers">2.4. Dispatch helpers</a></h3>
+<h3 id="dispatch-helpers"><a class="anchor" href="#dispatch-helpers"></a><a class="link" href="#dispatch-helpers">2.4. Dispatch helpers</a></h3>
 <div class="paragraph">
 <p>Using multi-methods is a good way to make open readers, <code>pathom</code> provides helpers for two common dispatch strategies:
 <code>key-dispatch</code> and <code>entity-dispatch</code>. Here is a pattern that I often use on parsers:</p>
@@ -1899,7 +1903,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="paragraph">
-<p><code>Connect</code> reader is used in conjunction with the [[map reader|Entities#map-reader]], when the entity doesn&#8217;t have the information, <code>Connect</code> will be triggered to resolve the attribute.</p>
+<p><code>Connect</code> reader is used in conjunction with the <a href="#map-reader">map reader</a>, when the entity doesn&#8217;t have the information, <code>Connect</code> will be triggered to resolve the attribute.</p>
 </div>
 <div class="paragraph">
 <p>To start simple, let&#8217;s create an entry point that provides the latest product we have in our store, to accomplish that we need to write a <code>resolver</code>, create an <code>index</code> and then use that to run our query:</p>
@@ -1939,12 +1943,16 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <ol class="arabic">
 <li>
 <p>It always takes two arguments:</p>
-</li>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
 <li>
 <p>the environment, which is provided by the regular parser engine</p>
 </li>
 <li>
 <p>a map containing the required input data for that <code>resolver</code> (more on this later).</p>
+</li>
+</ol>
+</div>
 </li>
 <li>
 <p>It must return a map, with at least one key.</p>
@@ -2106,7 +2114,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-18 18:48:18 -02
+Last updated 2018-01-19 13:50:57 -02
 </div>
 </div>
 </body>
