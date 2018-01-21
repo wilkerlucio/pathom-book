@@ -528,33 +528,83 @@ table.CodeRay td.code>pre{padding:0}
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_getting_started">1. Getting Started</a>
+<li><a href="#_introduction">1. Introduction</a>
 <ul class="sectlevel2">
-<li><a href="#_project_setup">1.1. Project setup</a></li>
+<li><a href="#_about_this_book">1.1. About this Book</a>
+<ul class="sectlevel3">
+<li><a href="#_work_in_progress">1.1.1. Work in Progress</a></li>
+<li><a href="#_contributing">1.1.2. Contributing</a></li>
 </ul>
 </li>
-<li><a href="#_pathom_core_engine">2. Pathom Core Engine</a>
-<ul class="sectlevel2">
-<li><a href="#_readers">2.1. Readers</a></li>
-<li><a href="#_entities">2.2. Entities</a></li>
-<li><a href="#_error_handling">2.3. Error handling</a></li>
-<li><a href="#dispatch-helpers">2.4. Dispatch helpers</a></li>
-<li><a href="#_request_caching">2.5. Request caching</a></li>
-<li><a href="#_plugins">2.6. Plugins</a></li>
-<li><a href="#_testing_todo">2.7. Testing #TODO</a></li>
-<li><a href="#_placeholders">2.8. Placeholders</a></li>
-<li><a href="#_profiling">2.9. Profiling</a></li>
-<li><a href="#_path_tracking">2.10. Path tracking</a></li>
-<li><a href="#_async_parsing_todo">2.11. Async parsing #TODO</a></li>
 </ul>
 </li>
-<li><a href="#_pathom_connect">3. Pathom Connect</a>
+<li><a href="#_getting_started">2. Getting Started</a>
 <ul class="sectlevel2">
-<li><a href="#_using_connect">3.1. Using Connect</a></li>
-<li><a href="#_understanding_the_indexes_todo">3.2. Understanding the indexes #TODO</a></li>
-<li><a href="#_auto_testing_todo">3.3. Auto testing #TODO</a></li>
-<li><a href="#_exploration_with_oge_todo">3.4. Exploration with OgE #TODO</a></li>
-<li><a href="#_graphql_integration_todo">3.5. GraphQL Integration #TODO</a></li>
+<li><a href="#_project_setup">2.1. Project setup</a></li>
+</ul>
+</li>
+<li><a href="#_pathom_core_engine">3. Pathom Core Engine</a>
+<ul class="sectlevel2">
+<li><a href="#_readers">3.1. Readers</a>
+<ul class="sectlevel3">
+<li><a href="#_what_is_a_reader">3.1.1. What is a reader?</a></li>
+<li><a href="#_pathom_dispatching">3.1.2. Pathom dispatching</a></li>
+<li><a href="#_dynamic_readers">3.1.3. Dynamic Readers</a></li>
+</ul>
+</li>
+<li><a href="#_entities">3.2. Entities</a>
+<ul class="sectlevel3">
+<li><a href="#_abstract">3.2.1. Abstract</a></li>
+<li><a href="#_using_entity">3.2.2. Using entity</a></li>
+<li><a href="#map-reader">3.2.3. Map reader</a></li>
+<li><a href="#_understanding_pathom_joins">3.2.4. Understanding pathom joins</a></li>
+<li><a href="#_attribute_dependency">3.2.5. Attribute dependency</a></li>
+<li><a href="#_union_queries">3.2.6. Union queries</a></li>
+</ul>
+</li>
+<li><a href="#_error_handling">3.3. Error handling</a>
+<ul class="sectlevel3">
+<li><a href="#_fail_fast">3.3.1. Fail fast</a></li>
+</ul>
+</li>
+<li><a href="#dispatch-helpers">3.4. Dispatch helpers</a></li>
+<li><a href="#_request_caching">3.5. Request caching</a></li>
+<li><a href="#_plugins">3.6. Plugins</a>
+<ul class="sectlevel3">
+<li><a href="#_shard_switch">3.6.1. Shard switch</a></li>
+</ul>
+</li>
+<li><a href="#_testing_todo">3.7. Testing #TODO</a></li>
+<li><a href="#_placeholders">3.8. Placeholders</a></li>
+<li><a href="#_profiling">3.9. Profiling</a></li>
+<li><a href="#_path_tracking">3.10. Path tracking</a></li>
+<li><a href="#_async_parsing_todo">3.11. Async parsing #TODO</a></li>
+</ul>
+</li>
+<li><a href="#_pathom_connect">4. Pathom Connect</a>
+<ul class="sectlevel2">
+<li><a href="#_using_connect">4.1. Using Connect</a>
+<ul class="sectlevel3">
+<li><a href="#_global_resolvers">4.1.1. Global resolvers</a></li>
+<li><a href="#_resolvers_with_input">4.1.2. Resolvers with input</a></li>
+<li><a href="#_multiple_inputs_todo">4.1.3. Multiple inputs #TODO</a></li>
+<li><a href="#_single_input_requirements">4.1.4. Single input requirements</a></li>
+<li><a href="#_connect_readers_todo">4.1.5. Connect readers #TODO</a></li>
+</ul>
+</li>
+<li><a href="#_understanding_the_indexes">4.2. Understanding the indexes</a>
+<ul class="sectlevel3">
+<li><a href="#_code_index_resolvers_code">4.2.1. <code>index-resolvers</code></a></li>
+<li><a href="#_code_index_oir_code">4.2.2. <code>index-oir</code></a></li>
+<li><a href="#_code_index_io_code">4.2.3. <code>index-io</code></a></li>
+<li><a href="#_code_idents_code">4.2.4. <code>idents</code></a></li>
+<li><a href="#_code_autocomplete_ignore_code">4.2.5. <code>autocomplete-ignore</code></a></li>
+<li><a href="#_merging_indexes">4.2.6. Merging indexes</a></li>
+</ul>
+</li>
+<li><a href="#_auto_testing_todo">4.3. Auto testing #TODO</a></li>
+<li><a href="#_exploration_with_oge_todo">4.4. Exploration with OgE #TODO</a></li>
+<li><a href="#_graphql_integration_todo">4.5. GraphQL Integration #TODO</a></li>
 </ul>
 </li>
 </ul>
@@ -562,14 +612,71 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_getting_started"><a class="anchor" href="#_getting_started"></a><a class="link" href="#_getting_started">1. Getting Started</a></h2>
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a><a class="link" href="#_introduction">1. Introduction</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>If you want to start writing your Om.next parser, you are in the right place! Let&#8217;s get this code session started with
+<p>The <code>pathom</code> library provides a rich set of functionality to build robust parsers to
+process Clojure queries using the Om.next query format (which is an extended version of
+the Datomic pull syntax):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A reader abstraction that allows for easy composition</p>
+</li>
+<li>
+<p>The concept of <code>entity</code> which works as a base framework for re-usable sharable readers</p>
+</li>
+<li>
+<p>A plugin system making the parser itself open for extensions, and some built-in plugins:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Error handler: handles errors on attribute level, making the parser more resilient</p>
+</li>
+<li>
+<p>Request cache: plugin to facilitate caching parts of the parsing that happens on a single request</p>
+</li>
+<li>
+<p>Profiler: a plugin to measure the time spent on each attribute during the parser</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>Connect</code>: a higher level abstraction to deal with attribute relationships in an automatic fashion, enabling for exploratory capabilities and easiness to access long chains of requirements</p>
+</li>
+<li>
+<p>GraphQL integration: leverage GraphQL endpoints directly from your query system (in development)</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_about_this_book"><a class="anchor" href="#_about_this_book"></a><a class="link" href="#_about_this_book">1.1. About this Book</a></h3>
+<div class="sect3">
+<h4 id="_work_in_progress"><a class="anchor" href="#_work_in_progress"></a><a class="link" href="#_work_in_progress">1.1.1. Work in Progress</a></h4>
+<div class="paragraph">
+<p>This is a work in progress. If you find an error, please submit a PR to fix it, or an issue with details of the problem.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contributing"><a class="anchor" href="#_contributing"></a><a class="link" href="#_contributing">1.1.2. Contributing</a></h4>
+<div class="paragraph">
+<p>This source for this book is hosted on <a href="https://github.com/wilkerlucio/pathom-book">Github</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_getting_started"><a class="anchor" href="#_getting_started"></a><a class="link" href="#_getting_started">2. Getting Started</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you want to start writing your parser, you are in the right place! Let&#8217;s get this code session started with
 a hello world parser with pathom:</p>
 </div>
 <div class="sect2">
-<h3 id="_project_setup"><a class="anchor" href="#_project_setup"></a><a class="link" href="#_project_setup">1.1. Project setup</a></h3>
+<h3 id="_project_setup"><a class="anchor" href="#_project_setup"></a><a class="link" href="#_project_setup">2.1. Project setup</a></h3>
 <div class="paragraph">
 <p>You can get a basic app with no prewritten demo code using:</p>
 </div>
@@ -869,12 +976,12 @@ still the same.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_pathom_core_engine"><a class="anchor" href="#_pathom_core_engine"></a><a class="link" href="#_pathom_core_engine">2. Pathom Core Engine</a></h2>
+<h2 id="_pathom_core_engine"><a class="anchor" href="#_pathom_core_engine"></a><a class="link" href="#_pathom_core_engine">3. Pathom Core Engine</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_readers"><a class="anchor" href="#_readers"></a><a class="link" href="#_readers">2.1. Readers</a></h3>
+<h3 id="_readers"><a class="anchor" href="#_readers"></a><a class="link" href="#_readers">3.1. Readers</a></h3>
 <div class="sect3">
-<h4 id="_what_is_a_reader"><a class="anchor" href="#_what_is_a_reader"></a><a class="link" href="#_what_is_a_reader">2.1.1. What is a reader?</a></h4>
+<h4 id="_what_is_a_reader"><a class="anchor" href="#_what_is_a_reader"></a><a class="link" href="#_what_is_a_reader">3.1.1. What is a reader?</a></h4>
 <div class="paragraph">
 <p>A reader is a function that will process a single entry from the query. For example, given the following query:
 <code>[:name :age]</code>. If you ask an <code>om.next</code> parser to read this, the reader function will be called twice; once for <code>:name</code> and another one for <code>:age</code>. Note that in the case of joins, the parser will only be called for the join entry, but not for it&#8217;s children (not automatically), for example: given the query <code>[:name :age {:parent [:name :gender]}]</code>. The reader function will be called 3 times now, one for <code>:name</code>, one for <code>:age</code> and one for <code>:parent</code>, when reading <code>:parent</code>, your reader code is responsible for checking that it has a children query, and do a recursive call (or anything else you want to do to handle this join). During this documentation, we are going to see many ways to implement those readers, but before we move on, I like to say the difference between <code>om.next</code> readers and <code>pathom</code> readers.</p>
@@ -912,7 +1019,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_pathom_dispatching"><a class="anchor" href="#_pathom_dispatching"></a><a class="link" href="#_pathom_dispatching">2.1.2. Pathom dispatching</a></h4>
+<h4 id="_pathom_dispatching"><a class="anchor" href="#_pathom_dispatching"></a><a class="link" href="#_pathom_dispatching">3.1.2. Pathom dispatching</a></h4>
 <div class="paragraph">
 <p>It&#8217;s time to look at pathom reader types: <code>function</code>, <code>map</code> and <code>vector</code>.</p>
 </div>
@@ -1002,7 +1109,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_dynamic_readers"><a class="anchor" href="#_dynamic_readers"></a><a class="link" href="#_dynamic_readers">2.1.3. Dynamic Readers</a></h4>
+<h4 id="_dynamic_readers"><a class="anchor" href="#_dynamic_readers"></a><a class="link" href="#_dynamic_readers">3.1.3. Dynamic Readers</a></h4>
 <div class="paragraph">
 <p>Recursive calls are widespread during parsing, and Om.next makes it even easier by providing the current parser as part of the environment. The problem is that if you just call the same parser recursively, there is no chance to change how the reading process operates. To enable this to happen, <code>pathom</code> makes the reader part of the environment, this way you can replace the read function when doing a recursive parse call, for example:</p>
 </div>
@@ -1038,9 +1145,9 @@ still the same.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_entities"><a class="anchor" href="#_entities"></a><a class="link" href="#_entities">2.2. Entities</a></h3>
+<h3 id="_entities"><a class="anchor" href="#_entities"></a><a class="link" href="#_entities">3.2. Entities</a></h3>
 <div class="sect3">
-<h4 id="_abstract"><a class="anchor" href="#_abstract"></a><a class="link" href="#_abstract">2.2.1. Abstract</a></h4>
+<h4 id="_abstract"><a class="anchor" href="#_abstract"></a><a class="link" href="#_abstract">3.2.1. Abstract</a></h4>
 <div class="paragraph">
 <p>Entities are one of the most important concepts to grasp about pathom. If you think of nodes on a graph, a node has its information and the connections with other nodes. Using this as a parallel, the <code>entity</code> in pathom is the representation of the current node value; this is where you are taking the information to navigate on the graph. The entity is usually a Clojure map, but that&#8217;s not a hard constraint, you can use whatever you want to represent the current entity. You can use whatever you want to represent the current entity as long as it is something from which you can use to derive the information.</p>
 </div>
@@ -1049,7 +1156,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_using_entity"><a class="anchor" href="#_using_entity"></a><a class="link" href="#_using_entity">2.2.2. Using entity</a></h4>
+<h4 id="_using_entity"><a class="anchor" href="#_using_entity"></a><a class="link" href="#_using_entity">3.2.2. Using entity</a></h4>
 <div class="paragraph">
 <p>To get the current entity use the <code>p/entity</code> function:</p>
 </div>
@@ -1081,7 +1188,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="map-reader"><a class="anchor" href="#map-reader"></a><a class="link" href="#map-reader">2.2.3. Map reader</a></h4>
+<h4 id="map-reader"><a class="anchor" href="#map-reader"></a><a class="link" href="#map-reader">3.2.3. Map reader</a></h4>
 <div class="paragraph">
 <p>Let&#8217;s re-write our previous example, now using the <code>map-reader</code>:</p>
 </div>
@@ -1130,7 +1237,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_understanding_pathom_joins"><a class="anchor" href="#_understanding_pathom_joins"></a><a class="link" href="#_understanding_pathom_joins">2.2.4. Understanding pathom joins</a></h4>
+<h4 id="_understanding_pathom_joins"><a class="anchor" href="#_understanding_pathom_joins"></a><a class="link" href="#_understanding_pathom_joins">3.2.4. Understanding pathom joins</a></h4>
 <div class="paragraph">
 <p>Now that we saw some ways to work with the current entity, it&#8217;s time to see how to navigate between them. You can look at the function <code>p/join</code> as a way to set the current entity. The core principle of <code>join</code> can be implemented as follows:</p>
 </div>
@@ -1192,7 +1299,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_attribute_dependency"><a class="anchor" href="#_attribute_dependency"></a><a class="link" href="#_attribute_dependency">2.2.5. Attribute dependency</a></h4>
+<h4 id="_attribute_dependency"><a class="anchor" href="#_attribute_dependency"></a><a class="link" href="#_attribute_dependency">3.2.5. Attribute dependency</a></h4>
 <div class="paragraph">
 <p>It is possible that the current entity will need to obtain some of its information from various sources. For example, in some cases, a computed attribute will itself need to re-invoke the processing chain to compute some subquery attribute. This can be done using <code>entity</code> with a second argument as shown in the following example:</p>
 </div>
@@ -1272,7 +1379,7 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_union_queries"><a class="anchor" href="#_union_queries"></a><a class="link" href="#_union_queries">2.2.6. Union queries</a></h4>
+<h4 id="_union_queries"><a class="anchor" href="#_union_queries"></a><a class="link" href="#_union_queries">3.2.6. Union queries</a></h4>
 <div class="paragraph">
 <p>Sometimes we need to handle heterogeneous nodes, nodes that depending on its type you want a different query. Union queries solve these cases. A common place for union queries are searching, let&#8217;s see an example where a search can be a user, a movie or a book.</p>
 </div>
@@ -1346,7 +1453,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_error_handling"><a class="anchor" href="#_error_handling"></a><a class="link" href="#_error_handling">2.3. Error handling</a></h3>
+<h3 id="_error_handling"><a class="anchor" href="#_error_handling"></a><a class="link" href="#_error_handling">3.3. Error handling</a></h3>
 <div class="paragraph">
 <p>By default, pathom parser will stop if some exception occurs during the parsing process. This is often undesirable if some node fails you still can return the other ones that succeed. You can use the <code>error-handler-plugin</code>. This plugin will wrap each read call with a try-catch block, and in case an error occurs, a value of <code>::p/reader-error</code> will be placed in that node, while details of it will go in a separate tree, but at the same path. Better an example to demonstrate:</p>
 </div>
@@ -1435,7 +1542,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fail_fast"><a class="anchor" href="#_fail_fast"></a><a class="link" href="#_fail_fast">2.3.1. Fail fast</a></h4>
+<h4 id="_fail_fast"><a class="anchor" href="#_fail_fast"></a><a class="link" href="#_fail_fast">3.3.1. Fail fast</a></h4>
 <div class="paragraph">
 <p>Having each node being caught is great for the UI, but not so much for testing. During testing you probably prefer the parser to blow up as fast as possible so you don&#8217;t accumulate a bunch of errors that get impossible to read. Having to create a different parser to remove the <code>error-handler-plugin</code> can be annoying, so there is an option to solve that. Send the key <code>::p/fail-fast?</code> as true in the environment, and the try/catch will not be done, making it fail as soon as an exception fires, for example, using our previous parser:</p>
 </div>
@@ -1450,7 +1557,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="dispatch-helpers"><a class="anchor" href="#dispatch-helpers"></a><a class="link" href="#dispatch-helpers">2.4. Dispatch helpers</a></h3>
+<h3 id="dispatch-helpers"><a class="anchor" href="#dispatch-helpers"></a><a class="link" href="#dispatch-helpers">3.4. Dispatch helpers</a></h3>
 <div class="paragraph">
 <p>Using multi-methods is a good way to make open readers, <code>pathom</code> provides helpers for two common dispatch strategies:
 <code>key-dispatch</code> and <code>entity-dispatch</code>. Here is a pattern that I often use on parsers:</p>
@@ -1511,7 +1618,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_request_caching"><a class="anchor" href="#_request_caching"></a><a class="link" href="#_request_caching">2.5. Request caching</a></h3>
+<h3 id="_request_caching"><a class="anchor" href="#_request_caching"></a><a class="link" href="#_request_caching">3.5. Request caching</a></h3>
 <div class="paragraph">
 <p>As your queries grow, there are more and more optimizations that you can do avoid unnecessary IO or heavy computations. Here we are going to talk about a <code>request cache</code>, which is a fancy name for an atom that is initialized on every query and stays on the environment so you can share the cache across nodes. Let&#8217;s see how we can use that to speed up our query processing:</p>
 </div>
@@ -1567,7 +1674,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_plugins"><a class="anchor" href="#_plugins"></a><a class="link" href="#_plugins">2.6. Plugins</a></h3>
+<h3 id="_plugins"><a class="anchor" href="#_plugins"></a><a class="link" href="#_plugins">3.6. Plugins</a></h3>
 <div class="paragraph">
 <p>Since <code>1.0.0-beta-8</code>, pathom included a plugin support. Plugins set code that wraps some of pathom operations, a plugin is a map where you bind keys from event names to functions. They work on <code>wrap</code> fashion, kind like <code>ring</code> wrappers. Here is what a plugin looks like:</p>
 </div>
@@ -1614,7 +1721,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <p>The plugin engine replaces the old <code>process-reader</code> in a much more powerful way. If you want to check a real example look for the source for the built-in plugins, they are quite small and yet powerful tools (grep for <code>-plugin</code> on the repository to find all of them).</p>
 </div>
 <div class="sect3">
-<h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">2.6.1. Shard switch</a></h4>
+<h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">3.6.1. Shard switch</a></h4>
 <div class="paragraph">
 <p>For a more practical example, let&#8217;s say we are routing in a micro-service architecture and our parser needs to be shard-aware. Let&#8217;s write a plugin that anytime it sees a <code>:shard</code> param on a query; and it will update the <code>:shard</code> attribute on the environment and send it now, providing that shard information for any node down the line.</p>
 </div>
@@ -1670,11 +1777,11 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_todo"><a class="anchor" href="#_testing_todo"></a><a class="link" href="#_testing_todo">2.7. Testing #TODO</a></h3>
+<h3 id="_testing_todo"><a class="anchor" href="#_testing_todo"></a><a class="link" href="#_testing_todo">3.7. Testing #TODO</a></h3>
 
 </div>
 <div class="sect2">
-<h3 id="_placeholders"><a class="anchor" href="#_placeholders"></a><a class="link" href="#_placeholders">2.8. Placeholders</a></h3>
+<h3 id="_placeholders"><a class="anchor" href="#_placeholders"></a><a class="link" href="#_placeholders">3.8. Placeholders</a></h3>
 <div class="paragraph">
 <p>There is one issue that some people stumbled upon while using Om.next; the problem happens when you need to display two or more different views of the same item as siblings (regarding query arrangement, not necessarily DOM siblings), how do you make this query?</p>
 </div>
@@ -1751,7 +1858,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_profiling"><a class="anchor" href="#_profiling"></a><a class="link" href="#_profiling">2.9. Profiling</a></h3>
+<h3 id="_profiling"><a class="anchor" href="#_profiling"></a><a class="link" href="#_profiling">3.9. Profiling</a></h3>
 <div class="paragraph">
 <p>It&#8217;s good to know how your queries are performing, and breaking it down by nodes is an excellent level to reason about how your queries are doing. Pathom provides a plugin to make this measurement easy to do:</p>
 </div>
@@ -1840,7 +1947,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_path_tracking"><a class="anchor" href="#_path_tracking"></a><a class="link" href="#_path_tracking">2.10. Path tracking</a></h3>
+<h3 id="_path_tracking"><a class="anchor" href="#_path_tracking"></a><a class="link" href="#_path_tracking">3.10. Path tracking</a></h3>
 <div class="paragraph">
 <p>As you go deep in your parser <code>pathom</code> track record of the current path taken, it&#8217;s available at <code>::p/path</code> at any time. It&#8217;s a vector containing the current path from the root, the current main use for it is regarding error reporting and profiling.</p>
 </div>
@@ -1870,16 +1977,16 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect2">
-<h3 id="_async_parsing_todo"><a class="anchor" href="#_async_parsing_todo"></a><a class="link" href="#_async_parsing_todo">2.11. Async parsing #TODO</a></h3>
+<h3 id="_async_parsing_todo"><a class="anchor" href="#_async_parsing_todo"></a><a class="link" href="#_async_parsing_todo">3.11. Async parsing #TODO</a></h3>
 
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_pathom_connect"><a class="anchor" href="#_pathom_connect"></a><a class="link" href="#_pathom_connect">3. Pathom Connect</a></h2>
+<h2 id="_pathom_connect"><a class="anchor" href="#_pathom_connect"></a><a class="link" href="#_pathom_connect">4. Pathom Connect</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_using_connect"><a class="anchor" href="#_using_connect"></a><a class="link" href="#_using_connect">3.1. Using Connect</a></h3>
+<h3 id="_using_connect"><a class="anchor" href="#_using_connect"></a><a class="link" href="#_using_connect">4.1. Using Connect</a></h3>
 <div class="paragraph">
 <p>In <code>Connect</code> you implement the graph by creating <code>resolvers</code>, those resolvers are functions that expose some data on the graph. In this tutorial, we are going to learn more about how to create resolvers by implementing a music store graph API.</p>
 </div>
@@ -1905,6 +2012,8 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <div class="paragraph">
 <p><code>Connect</code> reader is used in conjunction with the <a href="#map-reader">map reader</a>, when the entity doesn&#8217;t have the information, <code>Connect</code> will be triggered to resolve the attribute.</p>
 </div>
+<div class="sect3">
+<h4 id="_global_resolvers"><a class="anchor" href="#_global_resolvers"></a><a class="link" href="#_global_resolvers">4.1.1. Global resolvers</a></h4>
 <div class="paragraph">
 <p>To start simple, let&#8217;s create an entry point that provides the latest product we have in our store, to accomplish that we need to write a <code>resolver</code>, create an <code>index</code> and then use that to run our query:</p>
 </div>
@@ -1986,6 +2095,9 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
   <span class="comment">;                                                    :price 199.99M}}}</span></code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_resolvers_with_input"><a class="anchor" href="#_resolvers_with_input"></a><a class="link" href="#_resolvers_with_input">4.1.2. Resolvers with input</a></h4>
 <div class="paragraph">
 <p>Next, let&#8217;s say we want to have a new attribute which is the brand of the product. Of course, we could just throw the data there, but to make it an attractive example, let&#8217;s pretend the brand information is fetched from a different place, which maps the product id to its brand.</p>
 </div>
@@ -2073,8 +2185,13 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <div class="paragraph">
 <p>As you can see, <code>Connect</code> will fire an error in case you try to access something and it&#8217;s not possible to get there.</p>
 </div>
+</div>
 <div class="sect3">
-<h4 id="_single_input_requirements"><a class="anchor" href="#_single_input_requirements"></a><a class="link" href="#_single_input_requirements">3.1.1. Single input requirements</a></h4>
+<h4 id="_multiple_inputs_todo"><a class="anchor" href="#_multiple_inputs_todo"></a><a class="link" href="#_multiple_inputs_todo">4.1.3. Multiple inputs #TODO</a></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_single_input_requirements"><a class="anchor" href="#_single_input_requirements"></a><a class="link" href="#_single_input_requirements">4.1.4. Single input requirements</a></h4>
 <div class="paragraph">
 <p>Up to this, we saw how to access a global entry using its attribute name, and how to expand an entity data by attribute discovery. Another significant entry point for the graph are idents. Idents are for queries that need to start from a single input, for example: <code>product by id</code>, <code>user by email</code>. We have for example a resolver to get the brand from the product id, so <code>:product/id</code> can be used to find that. Also the <code>:product/brand-id</code> can be realized from <code>:product/brand</code>. But how to set those at query time? Using idents!</p>
 </div>
@@ -2091,21 +2208,119 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <p>By using <code>idents</code> on the left side of the join, we are providing an initial context with a single attribute for the join. So when we create an ident join with <code>[:product/id 1]</code>, the right side will start with an entity containing <code>{:product/id 1}</code>, and the rest derives from that.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_connect_readers_todo"><a class="anchor" href="#_connect_readers_todo"></a><a class="link" href="#_connect_readers_todo">4.1.5. Connect readers #TODO</a></h4>
+
+</div>
 </div>
 <div class="sect2">
-<h3 id="_understanding_the_indexes_todo"><a class="anchor" href="#_understanding_the_indexes_todo"></a><a class="link" href="#_understanding_the_indexes_todo">3.2. Understanding the indexes #TODO</a></h3>
+<h3 id="_understanding_the_indexes"><a class="anchor" href="#_understanding_the_indexes"></a><a class="link" href="#_understanding_the_indexes">4.2. Understanding the indexes</a></h3>
+<div class="paragraph">
+<p><code>Connect</code> maintains a few indexes containg information about the <code>resolvers</code> and the
+relationships on attributes. <code>Connect</code> will look up the index in the environment, on the
+key <code>:com.wsscode.pathom.connect/indexes</code>, this is a map containing the indexes inside
+of it. On this topic we are going to learn how they are organized and for what purpose
+each one serves. To use as example, we will look at the index generated by our previous
+example on the getting started section, let&#8217;s take a look at it now:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">{<span class="symbol">::p.connect/index-resolvers</span>
+ {get-started/latest-product
+  {<span class="symbol">::p.connect/sym</span>    get-started/latest-product
+   <span class="symbol">::p.connect/input</span>  #{}
+   <span class="symbol">::p.connect/output</span> [{<span class="symbol">::get-started/latest-product</span> [<span class="symbol">:product/id</span>
+                                                      <span class="symbol">:product/title</span>
+                                                      <span class="symbol">:product/price</span>]}]}
+
+  get-started/product-brand
+  {<span class="symbol">::p.connect/sym</span>    get-started/product-brand
+   <span class="symbol">::p.connect/input</span>  #{<span class="symbol">:product/id</span>}
+   <span class="symbol">::p.connect/output</span> [<span class="symbol">:product/brand</span>]}
+
+  get-started/brand-id-from-name
+  {<span class="symbol">::p.connect/sym</span>    get-started/brand-id-from-name
+   <span class="symbol">::p.connect/input</span>  #{<span class="symbol">:product/brand</span>}
+   <span class="symbol">::p.connect/output</span> [<span class="symbol">:product/brand-id</span>]}}
+
+ <span class="symbol">::p.connect/index-oir</span>
+ {<span class="symbol">:get-started/latest-product</span> {#{} #{get-started/latest-product}}
+  <span class="symbol">:product/brand</span>              {#{<span class="symbol">:product/id</span>} #{get-started/product-brand}}
+  <span class="symbol">:product/brand-id</span>           {#{<span class="symbol">:product/brand</span>} #{get-started/brand-id-from-name}}}
+
+ <span class="symbol">::p.connect/index-io</span>
+ {#{}               {<span class="symbol">:get-started/latest-product</span> <span class="error">#</span><span class="symbol">:product</span>{<span class="symbol">:id</span> {} <span class="symbol">:title</span> {} <span class="symbol">:price</span> {}}}
+  #{<span class="symbol">:product/id</span>}    {<span class="symbol">:product/brand</span> {}}
+  #{<span class="symbol">:product/brand</span>} {<span class="symbol">:product/brand-id</span> {}}}
+
+ <span class="symbol">::p.connect/idents</span>
+ #{<span class="symbol">:product/brand</span> <span class="symbol">:product/id</span>}}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_index_resolvers_code"><a class="anchor" href="#_code_index_resolvers_code"></a><a class="link" href="#_code_index_resolvers_code">4.2.1. <code>index-resolvers</code></a></h4>
+<div class="paragraph">
+<p>This is a raw index of available resolvers, it&#8217;s a map <code>resolver-sym &#8594; resolver-data</code>.
+<code>resolver-data</code> is any information relevant that you want to add about that resolver. Any
+key that you adding during <code>p.connect/add</code> will end up on this map, also <code>Connect</code> will
+add the key <code>::p.connect/sym</code> automatically, which is the same symbol you added. If you
+want to access the data for a <code>resolver</code>, <code>Connect</code> provides a helper function for that:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(p.connect/resolver-data env-or-indexes `product-brand`)
+<span class="comment">; =&gt; {::p.connect/sym    get-started/product-brand</span>
+<span class="comment">;     ::p.connect/input  #{:product/id}</span>
+<span class="comment">;     ::p.connect/output [:product/brand]}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_index_oir_code"><a class="anchor" href="#_code_index_oir_code"></a><a class="link" href="#_code_index_oir_code">4.2.2. <code>index-oir</code></a></h4>
+<div class="paragraph">
+<p>This index stands for <code>output &#8594; input &#8594; resolver</code>, it&#8217;s the index used for the <code>Connect</code>
+reader to lookup the attributes. This index is built by looking at the output for the
+resolver when you add it,</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_index_io_code"><a class="anchor" href="#_code_index_io_code"></a><a class="link" href="#_code_index_io_code">4.2.3. <code>index-io</code></a></h4>
+<div class="paragraph">
+<p>The auto-complete index, <code>input &#8594; output</code>. This index accumulates all the reach for
+each single attribute on the index. By walking this information we can know ahead of
+time all attribute possibilities we can fetch from a given attribute. In our example,
+if we were given the attribute <code>:product/id</code>, what attributes can we fetch from that?</p>
+</div>
+<div class="paragraph">
+<p>First</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_idents_code"><a class="anchor" href="#_code_idents_code"></a><a class="link" href="#_code_idents_code">4.2.4. <code>idents</code></a></h4>
+<div class="paragraph">
+<p>The <code>idents</code> index contain information about which single attributes can be used to access
+some information. This index is used on <code>OgE</code> to provide auto-complete options for idents.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_autocomplete_ignore_code"><a class="anchor" href="#_code_autocomplete_ignore_code"></a><a class="link" href="#_code_autocomplete_ignore_code">4.2.5. <code>autocomplete-ignore</code></a></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_merging_indexes"><a class="anchor" href="#_merging_indexes"></a><a class="link" href="#_merging_indexes">4.2.6. Merging indexes</a></h4>
+
+</div>
+</div>
+<div class="sect2">
+<h3 id="_auto_testing_todo"><a class="anchor" href="#_auto_testing_todo"></a><a class="link" href="#_auto_testing_todo">4.3. Auto testing #TODO</a></h3>
 
 </div>
 <div class="sect2">
-<h3 id="_auto_testing_todo"><a class="anchor" href="#_auto_testing_todo"></a><a class="link" href="#_auto_testing_todo">3.3. Auto testing #TODO</a></h3>
+<h3 id="_exploration_with_oge_todo"><a class="anchor" href="#_exploration_with_oge_todo"></a><a class="link" href="#_exploration_with_oge_todo">4.4. Exploration with OgE #TODO</a></h3>
 
 </div>
 <div class="sect2">
-<h3 id="_exploration_with_oge_todo"><a class="anchor" href="#_exploration_with_oge_todo"></a><a class="link" href="#_exploration_with_oge_todo">3.4. Exploration with OgE #TODO</a></h3>
-
-</div>
-<div class="sect2">
-<h3 id="_graphql_integration_todo"><a class="anchor" href="#_graphql_integration_todo"></a><a class="link" href="#_graphql_integration_todo">3.5. GraphQL Integration #TODO</a></h3>
+<h3 id="_graphql_integration_todo"><a class="anchor" href="#_graphql_integration_todo"></a><a class="link" href="#_graphql_integration_todo">4.5. GraphQL Integration #TODO</a></h3>
 
 </div>
 </div>
@@ -2114,7 +2329,7 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-19 13:50:57 -02
+Last updated 2018-01-20 23:26:45 -02
 </div>
 </div>
 </body>
