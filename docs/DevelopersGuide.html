@@ -1816,7 +1816,10 @@ error on the client-side.</p>
 <div class="sect3">
 <h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">3.6.1. Shard switch</a></h4>
 <div class="paragraph">
-<p>For a more practical example, let&#8217;s say we are routing in a micro-service architecture and our parser needs to be shard-aware. Let&#8217;s write a plugin that anytime it sees a <code>:shard</code> param on a query; and it will update the <code>:shard</code> attribute on the environment and send it now, providing that shard information for any node down the line.</p>
+<p>For a more practical example, let&#8217;s say we are routing in a micro-service architecture
+and our parser needs to be shard-aware. Let&#8217;s write a plugin that anytime it sees a <code>:shard</code>
+param on a query; and it will update the <code>:shard</code> attribute on the environment and send
+it down, providing that shard information for any node downstream.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2436,7 +2439,7 @@ custom way.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-22 18:06:33 -02
+Last updated 2018-01-22 18:26:14 -02
 </div>
 </div>
 </body>

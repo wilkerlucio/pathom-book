@@ -1031,7 +1031,10 @@ The plugin engine replaces the old `process-reader` in a much more powerful way.
 
 === Shard switch
 
-For a more practical example, let's say we are routing in a micro-service architecture and our parser needs to be shard-aware. Let's write a plugin that anytime it sees a `:shard` param on a query; and it will update the `:shard` attribute on the environment and send it now, providing that shard information for any node down the line.
+For a more practical example, let's say we are routing in a micro-service architecture
+and our parser needs to be shard-aware. Let's write a plugin that anytime it sees a `:shard`
+param on a query; and it will update the `:shard` attribute on the environment and send
+it down, providing that shard information for any node downstream.
 
 ```clojure
 (ns pathom-docs.plugin-shard
