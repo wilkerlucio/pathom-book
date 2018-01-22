@@ -842,9 +842,37 @@ Having each node being caught is great for the UI, but not so much for testing. 
 ; => CompilerException clojure.lang.ExceptionInfo: Error triggered {:foo "bar"}, ...
 ```
 
-=== Raising errors #TODO
+=== Raising errors
 
+The default error output format (in a separated tree) is very convenient for direct API
+calls, because they leave a clean output on the data part. But if you want to expose those
+errors on the UI, pulling then out of the separated tree can be a bit of a pain. To help
+with that there is a `p/raise-errors` helper, this will lift the errors so they are present
+at the same level of the error entry. Let's take our last error output example and process
+it with `p/raise-errors`
 
+[source,clojure]
+----
+(p/raise-errors {:go {:key :leaf
+                      :nest {:trigger-error :com.wsscode.pathom.core/reader-error :other :leaf}
+                      :trigger-error :com.wsscode.pathom.core/reader-error}
+                 :com.wsscode.pathom.core/errors {[:go :nest :trigger-error] "Error triggered"
+                                                  [:go :trigger-error] "Error triggered"}})
+
+; outputs:
+
+{:go {:key :leaf
+      :nest {:trigger-error :com.wsscode.pathom.core/reader-error
+             :other :leaf
+             :com.wsscode.pathom.core/errors {:trigger-error "Error triggered"}}
+      :trigger-error :com.wsscode.pathom.core/reader-error
+      :com.wsscode.pathom.core/errors {:trigger-error "Error triggered"}}}
+----
+
+Notice that we don't have the root `::p/errors` anymore, instead it is placed at the
+same level of the error attribute. So the path `[::p/errors [:go :nest :trigger-error]]`
+turns into `[:go :nest ::p/errors :trigger-error]`. This makes very easy to pull the
+error on the client-side.
 
 == Dispatch helpers [[dispatch-helpers]]
 

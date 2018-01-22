@@ -566,7 +566,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_error_handling">3.3. Error handling</a>
 <ul class="sectlevel3">
 <li><a href="#_fail_fast">3.3.1. Fail fast</a></li>
-<li><a href="#_raising_errors_todo">3.3.2. Raising errors #TODO</a></li>
+<li><a href="#_raising_errors">3.3.2. Raising errors</a></li>
 </ul>
 </li>
 <li><a href="#dispatch-helpers">3.4. Dispatch helpers</a></li>
@@ -1613,8 +1613,39 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 </div>
 </div>
 <div class="sect3">
-<h4 id="_raising_errors_todo"><a class="anchor" href="#_raising_errors_todo"></a><a class="link" href="#_raising_errors_todo">3.3.2. Raising errors #TODO</a></h4>
+<h4 id="_raising_errors"><a class="anchor" href="#_raising_errors"></a><a class="link" href="#_raising_errors">3.3.2. Raising errors</a></h4>
+<div class="paragraph">
+<p>The default error output format (in a separated tree) is very convenient for direct API
+calls, because they leave a clean output on the data part. But if you want to expose those
+errors on the UI, pulling then out of the separated tree can be a bit of a pain. To help
+with that there is a <code>p/raise-errors</code> helper, this will lift the errors so they are present
+at the same level of the error entry. Let&#8217;s take our last error output example and process
+it with <code>p/raise-errors</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(p/raise-errors {<span class="symbol">:go</span> {<span class="symbol">:key</span> <span class="symbol">:leaf</span>
+                      <span class="symbol">:nest</span> {<span class="symbol">:trigger-error</span> <span class="symbol">:com.wsscode.pathom.core/reader-error</span> <span class="symbol">:other</span> <span class="symbol">:leaf</span>}
+                      <span class="symbol">:trigger-error</span> <span class="symbol">:com.wsscode.pathom.core/reader-error</span>}
+                 <span class="symbol">:com.wsscode.pathom.core/errors</span> {[<span class="symbol">:go</span> <span class="symbol">:nest</span> <span class="symbol">:trigger-error</span>] <span class="string"><span class="delimiter">&quot;</span><span class="content">Error triggered</span><span class="delimiter">&quot;</span></span>
+                                                  [<span class="symbol">:go</span> <span class="symbol">:trigger-error</span>] <span class="string"><span class="delimiter">&quot;</span><span class="content">Error triggered</span><span class="delimiter">&quot;</span></span>}})
 
+<span class="comment">; outputs:</span>
+
+{<span class="symbol">:go</span> {<span class="symbol">:key</span> <span class="symbol">:leaf</span>
+      <span class="symbol">:nest</span> {<span class="symbol">:trigger-error</span> <span class="symbol">:com.wsscode.pathom.core/reader-error</span>
+             <span class="symbol">:other</span> <span class="symbol">:leaf</span>
+             <span class="symbol">:com.wsscode.pathom.core/errors</span> {<span class="symbol">:trigger-error</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Error triggered</span><span class="delimiter">&quot;</span></span>}}
+      <span class="symbol">:trigger-error</span> <span class="symbol">:com.wsscode.pathom.core/reader-error</span>
+      <span class="symbol">:com.wsscode.pathom.core/errors</span> {<span class="symbol">:trigger-error</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Error triggered</span><span class="delimiter">&quot;</span></span>}}}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice that we don&#8217;t have the root <code>::p/errors</code> anymore, instead it is placed at the
+same level of the error attribute. So the path <code>[::p/errors [:go :nest :trigger-error]]</code>
+turns into <code>[:go :nest ::p/errors :trigger-error]</code>. This makes very easy to pull the
+error on the client-side.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -2404,7 +2435,7 @@ custom way.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-22 17:51:47 -02
+Last updated 2018-01-22 18:00:46 -02
 </div>
 </div>
 </body>
