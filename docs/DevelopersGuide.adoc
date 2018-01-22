@@ -842,6 +842,10 @@ Having each node being caught is great for the UI, but not so much for testing. 
 ; => CompilerException clojure.lang.ExceptionInfo: Error triggered {:foo "bar"}, ...
 ```
 
+=== Raising errors #TODO
+
+
+
 == Dispatch helpers [[dispatch-helpers]]
 
 Using multi-methods is a good way to make open readers, `pathom` provides helpers for two common dispatch strategies:
@@ -1471,7 +1475,9 @@ want to access the data for a `resolver`, `Connect` provides a helper function f
 
 This index stands for `output -> input -> resolver`, it's the index used for the `Connect`
 reader to lookup the attributes. This index is built by looking at the output for the
-resolver when you add it,
+resolver when you add it, it will use each root output attribute and save that resolver
+as a path to that attribute, given that input. It kind of inverts the order of things,
+it puts the output attribute at the front, and then the path to get to it.
 
 === `index-io`
 
@@ -1480,7 +1486,12 @@ each single attribute on the index. By walking this information we can know ahea
 time all attribute possibilities we can fetch from a given attribute. In our example,
 if we were given the attribute `:product/id`, what attributes can we fetch from that?
 
-First
+If I have a `:product/id`, what can I reach from it? Looking at the index, the `:product/id`
+itself can provide the `:product/brand`. But if I have access to `:product/brand` it means
+I also have access to whatever `:product/brand` can provide. By doing multiple iterations
+(until there are no new attributes) we end up knowing that `:product/id` can provide the
+attributes `:product/brand` and `:product/brand-id`. And this is how autocomplete is
+done via the `index-io`.
 
 === `idents`
 
@@ -1488,6 +1499,13 @@ The `idents` index contain information about which single attributes can be used
 some information. This index is used on `OgE` to provide auto-complete options for idents.
 
 === `autocomplete-ignore`
+
+This index is for a more advanced usage. Currently it's only used by the `GraphQL` integration.
+On the `GraphQL` integration we leverage the fact that types have a fixed set of attributes
+and add that into the index. The problem is that the types thenselves are not valid entries
+for the query, then `autocomplete-ignore` is a way to make those things be ignored in
+the auto-complete. You probably only need this if you are building the index in some
+custom way.
 
 === Merging indexes
 

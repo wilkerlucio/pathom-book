@@ -566,6 +566,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_error_handling">3.3. Error handling</a>
 <ul class="sectlevel3">
 <li><a href="#_fail_fast">3.3.1. Fail fast</a></li>
+<li><a href="#_raising_errors_todo">3.3.2. Raising errors #TODO</a></li>
 </ul>
 </li>
 <li><a href="#dispatch-helpers">3.4. Dispatch helpers</a></li>
@@ -1412,7 +1413,7 @@ still the same.</p>
     (parser {<span class="symbol">::p/entity</span> (<span class="keyword">atom</span> {})
              <span class="symbol">::p/reader</span> {<span class="symbol">:id</span> item-reader <span class="symbol">:name</span> item-reader <span class="symbol">:description</span> item-reader}}
       [<span class="symbol">:id</span> <span class="symbol">:name</span> <span class="symbol">:description</span>]))
-  <span class="comment">; since we are always using that map reader, each entry has to spend a second</span>
+  <span class="comment">; since we are always hitting the expensive reader, each entry has to spend a second</span>
 
   <span class="comment">; &quot;Elapsed time: 3013.386195 msecs&quot;</span>
   <span class="comment">; =&gt; {:id 42, :name &quot;Some Product&quot;, :description &quot;This should be a cool product.&quot;}</span>
@@ -1610,6 +1611,10 @@ The value of <code>::p/union-path</code> can be a keyword (from something inside
 <span class="comment">; =&gt; CompilerException clojure.lang.ExceptionInfo: Error triggered {:foo &quot;bar&quot;}, ...</span></code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_raising_errors_todo"><a class="anchor" href="#_raising_errors_todo"></a><a class="link" href="#_raising_errors_todo">3.3.2. Raising errors #TODO</a></h4>
+
 </div>
 </div>
 <div class="sect2">
@@ -2336,7 +2341,9 @@ want to access the data for a <code>resolver</code>, <code>Connect</code> provid
 <div class="paragraph">
 <p>This index stands for <code>output &#8594; input &#8594; resolver</code>, it&#8217;s the index used for the <code>Connect</code>
 reader to lookup the attributes. This index is built by looking at the output for the
-resolver when you add it,</p>
+resolver when you add it, it will use each root output attribute and save that resolver
+as a path to that attribute, given that input. It kind of inverts the order of things,
+it puts the output attribute at the front, and then the path to get to it.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2348,7 +2355,12 @@ time all attribute possibilities we can fetch from a given attribute. In our exa
 if we were given the attribute <code>:product/id</code>, what attributes can we fetch from that?</p>
 </div>
 <div class="paragraph">
-<p>First</p>
+<p>If I have a <code>:product/id</code>, what can I reach from it? Looking at the index, the <code>:product/id</code>
+itself can provide the <code>:product/brand</code>. But if I have access to <code>:product/brand</code> it means
+I also have access to whatever <code>:product/brand</code> can provide. By doing multiple iterations
+(until there are no new attributes) we end up knowing that <code>:product/id</code> can provide the
+attributes <code>:product/brand</code> and <code>:product/brand-id</code>. And this is how autocomplete is
+done via the <code>index-io</code>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2360,7 +2372,14 @@ some information. This index is used on <code>OgE</code> to provide auto-complet
 </div>
 <div class="sect3">
 <h4 id="_code_autocomplete_ignore_code"><a class="anchor" href="#_code_autocomplete_ignore_code"></a><a class="link" href="#_code_autocomplete_ignore_code">4.2.5. <code>autocomplete-ignore</code></a></h4>
-
+<div class="paragraph">
+<p>This index is for a more advanced usage. Currently it&#8217;s only used by the <code>GraphQL</code> integration.
+On the <code>GraphQL</code> integration we leverage the fact that types have a fixed set of attributes
+and add that into the index. The problem is that the types thenselves are not valid entries
+for the query, then <code>autocomplete-ignore</code> is a way to make those things be ignored in
+the auto-complete. You probably only need this if you are building the index in some
+custom way.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_merging_indexes"><a class="anchor" href="#_merging_indexes"></a><a class="link" href="#_merging_indexes">4.2.6. Merging indexes</a></h4>
@@ -2385,7 +2404,7 @@ some information. This index is used on <code>OgE</code> to provide auto-complet
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-22 09:33:31 -02
+Last updated 2018-01-22 17:51:47 -02
 </div>
 </div>
 </body>
