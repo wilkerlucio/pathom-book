@@ -854,7 +854,8 @@ it with `p/raise-errors`
 [source,clojure]
 ----
 (p/raise-errors {:go {:key :leaf
-                      :nest {:trigger-error :com.wsscode.pathom.core/reader-error :other :leaf}
+                      :nest {:trigger-error :com.wsscode.pathom.core/reader-error
+                             :other :leaf}
                       :trigger-error :com.wsscode.pathom.core/reader-error}
                  :com.wsscode.pathom.core/errors {[:go :nest :trigger-error] "Error triggered"
                                                   [:go :trigger-error] "Error triggered"}})
