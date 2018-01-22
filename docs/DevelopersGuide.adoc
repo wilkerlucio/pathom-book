@@ -61,7 +61,7 @@ a hello world parser with pathom:
 
 == Project setup
 
-You can get a basic app with no prewritten demo code using:
+You can get a basic parser using:
 
 [source,clojure]
 ----
@@ -665,6 +665,20 @@ CompilerException clojure.lang.ExceptionInfo: Entity attributes #{:character/nam
 ```
 
 Another important point to remember about computed attributes: if they require IO or intense computation you should do some caching to improve parsing performance, remember they can be called many times for a given query depending on your data interdependency. See [[Request caching|Request caching]] for more details on that.
+
+=== Atom entities
+
+Entities can also be atoms, this is a useful caching mechanism that allows for a reader to add information into the current entity without having to make a join.
+
+The built-in function `p/entity` always returns a Clojure map, if the entity is an atom it will deref it automatically.
+
+Let's see an example using an entity atom:
+
+```clojure
+include::../src/com/wsscode/pathom/book/entities/atom_entities.cljc[]
+```
+
+You can think atom entities as a narrow type of caching, valid only for the processing of the current entity.
 
 === Union queries
 
@@ -1447,7 +1461,7 @@ add the key `::p.connect/sym` automatically, which is the same symbol you added.
 want to access the data for a `resolver`, `Connect` provides a helper function for that:
 
 ```clojure
-(p.connect/resolver-data env-or-indexes `product-brand`)
+(p.connect/resolver-data env-or-indexes `product-brand)
 ; => {::p.connect/sym    get-started/product-brand
 ;     ::p.connect/input  #{:product/id}
 ;     ::p.connect/output [:product/brand]}

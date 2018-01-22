@@ -559,7 +559,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#map-reader">3.2.3. Map reader</a></li>
 <li><a href="#_understanding_pathom_joins">3.2.4. Understanding pathom joins</a></li>
 <li><a href="#_attribute_dependency">3.2.5. Attribute dependency</a></li>
-<li><a href="#_union_queries">3.2.6. Union queries</a></li>
+<li><a href="#_atom_entities">3.2.6. Atom entities</a></li>
+<li><a href="#_union_queries">3.2.7. Union queries</a></li>
 </ul>
 </li>
 <li><a href="#_error_handling">3.3. Error handling</a>
@@ -678,7 +679,7 @@ a hello world parser with pathom:</p>
 <div class="sect2">
 <h3 id="_project_setup"><a class="anchor" href="#_project_setup"></a><a class="link" href="#_project_setup">2.1. Project setup</a></h3>
 <div class="paragraph">
-<p>You can get a basic app with no prewritten demo code using:</p>
+<p>You can get a basic parser using:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1379,7 +1380,62 @@ still the same.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_union_queries"><a class="anchor" href="#_union_queries"></a><a class="link" href="#_union_queries">3.2.6. Union queries</a></h4>
+<h4 id="_atom_entities"><a class="anchor" href="#_atom_entities"></a><a class="link" href="#_atom_entities">3.2.6. Atom entities</a></h4>
+<div class="paragraph">
+<p>Entities can also be atoms, this is a useful caching mechanism that allows for a reader to add information into the current entity without having to make a join.</p>
+</div>
+<div class="paragraph">
+<p>The built-in function <code>p/entity</code> always returns a Clojure map, if the entity is an atom it will deref it automatically.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s see an example using an entity atom:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.entities.atom-entities</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]))
+
+(<span class="keyword">def</span> <span class="function">parser</span> (p/parser {}))
+
+(<span class="keyword">def</span> <span class="function">sample-item</span>
+  {<span class="symbol">:id</span> <span class="integer">42</span>
+   <span class="symbol">:name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Some Product</span><span class="delimiter">&quot;</span></span>
+   <span class="symbol">:description</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">This should be a cool product.</span><span class="delimiter">&quot;</span></span>})
+
+(<span class="keyword">defn</span> <span class="function">item-reader</span> [{<span class="symbol">:keys</span> [ast] <span class="symbol">:as</span> env}]
+  <span class="error">#</span>?(<span class="symbol">:clj</span> (Thread/sleep <span class="integer">1000</span>))
+  (<span class="keyword">-&gt;</span> (p/swap-entity! env <span class="keyword">merge</span> sample-item)
+      (<span class="keyword">get</span> (<span class="symbol">:key</span> ast))))
+
+(<span class="keyword">comment</span>
+  (<span class="keyword">time</span>
+    (parser {<span class="symbol">::p/entity</span> (<span class="keyword">atom</span> {})
+             <span class="symbol">::p/reader</span> {<span class="symbol">:id</span> item-reader <span class="symbol">:name</span> item-reader <span class="symbol">:description</span> item-reader}}
+      [<span class="symbol">:id</span> <span class="symbol">:name</span> <span class="symbol">:description</span>]))
+  <span class="comment">; since we are always using that map reader, each entry has to spend a second</span>
+
+  <span class="comment">; &quot;Elapsed time: 3013.386195 msecs&quot;</span>
+  <span class="comment">; =&gt; {:id 42, :name &quot;Some Product&quot;, :description &quot;This should be a cool product.&quot;}</span>
+
+  (<span class="keyword">time</span>
+    (parser {<span class="symbol">::p/entity</span> (<span class="keyword">atom</span> {})
+             <span class="symbol">::p/reader</span> [p/map-reader
+                         {<span class="symbol">:id</span> item-reader <span class="symbol">:name</span> item-reader <span class="symbol">:description</span> item-reader}]}
+      [<span class="symbol">:id</span> <span class="symbol">:name</span> <span class="symbol">:description</span>]))
+  <span class="comment">; now, adding the map-reader to the game will allow it to check on the entity first,</span>
+  <span class="comment">; making the cached entity effective.</span>
+
+  <span class="comment">;&quot;Elapsed time: 1006.479409 msecs&quot;</span>
+  <span class="comment">;=&gt; {:id 42, :name &quot;Some Product&quot;, :description &quot;This should be a cool product.&quot;}</span>
+  )</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can think atom entities as a narrow type of caching, valid only for the processing of the current entity.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_union_queries"><a class="anchor" href="#_union_queries"></a><a class="link" href="#_union_queries">3.2.7. Union queries</a></h4>
 <div class="paragraph">
 <p>Sometimes we need to handle heterogeneous nodes, nodes that depending on its type you want a different query. Union queries solve these cases. A common place for union queries are searching, let&#8217;s see an example where a search can be a user, a movie or a book.</p>
 </div>
@@ -2268,7 +2324,7 @@ want to access the data for a <code>resolver</code>, <code>Connect</code> provid
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="clojure">(p.connect/resolver-data env-or-indexes `product-brand`)
+<pre class="CodeRay highlight"><code data-lang="clojure">(p.connect/resolver-data env-or-indexes `product-brand)
 <span class="comment">; =&gt; {::p.connect/sym    get-started/product-brand</span>
 <span class="comment">;     ::p.connect/input  #{:product/id}</span>
 <span class="comment">;     ::p.connect/output [:product/brand]}</span></code></pre>
@@ -2329,7 +2385,7 @@ some information. This index is used on <code>OgE</code> to provide auto-complet
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-20 23:26:45 -02
+Last updated 2018-01-22 09:33:31 -02
 </div>
 </div>
 </body>
