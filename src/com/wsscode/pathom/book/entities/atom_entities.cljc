@@ -18,7 +18,7 @@
     (parser {::p/entity (atom {})
              ::p/reader {:id item-reader :name item-reader :description item-reader}}
       [:id :name :description]))
-  ; since we are always using that map reader, each entry has to spend a second
+  ; since we are always hitting the expensive reader, each entry has to spend a second
 
   ; "Elapsed time: 3013.386195 msecs"
   ; => {:id 42, :name "Some Product", :description "This should be a cool product."}
