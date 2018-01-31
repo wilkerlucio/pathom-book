@@ -1,6 +1,6 @@
 = Pathom Developers Guide
 :author: Wilker Lucio
-:revdate: Jan 18, 2018
+:revdate: Jan 31, 2018
 :revnumber: 1.0
 :lang: en
 :encoding: UTF-8
@@ -1443,7 +1443,24 @@ Up to this, we saw how to access a global entry using its attribute name, and ho
 
 By using `idents` on the left side of the join, we are providing an initial context with a single attribute for the join. So when we create an ident join with `[:product/id 1]`, the right side will start with an entity containing `{:product/id 1}`, and the rest derives from that.
 
-=== Connect readers #TODO
+=== Connect readers
+
+The `p.connect/all-readers` is a combination of a few readers used by connect, let's talk
+about each reader individually.
+
+==== `p.connect/reader`
+
+The main `Connect` reader. This will look up the attribute on the index and tries to resolve it. If you need extra
+dependencies that are not available, will recursively try to resolve until it reaches the data.
+
+==== `p.connect/ident-reader` [[connect-ident-reader]]
+
+The `ident-reader` enables us to start ident based queries. When an ident query is reaches
+this reader, it will check on the index to see if the ident key is present on <<connect-index-idents,idents>>.
+
+==== `p.connect/index-reader`
+
+This reader exposes the index itself with the name `::p.connect/indexes`.
 
 == Understanding the indexes
 
@@ -1525,10 +1542,12 @@ I also have access to whatever `:product/brand` can provide. By doing multiple i
 attributes `:product/brand` and `:product/brand-id`. And this is how autocomplete is
 done via the `index-io`.
 
-=== `idents`
+=== `idents` [[connect-index-idents]]
 
 The `idents` index contain information about which single attributes can be used to access
-some information. This index is used on `OgE` to provide auto-complete options for idents.
+some information. This index is used on <<connect-ident-reader,ident-reader>> and on
+`OgE` to provide auto-complete options for idents. Any time you add a resolver that has
+a single input, that input attribute is added on the `idents` index.
 
 === `autocomplete-ignore`
 
@@ -1539,7 +1558,7 @@ for the query, then `autocomplete-ignore` is a way to make those things be ignor
 the auto-complete. You probably only need this if you are building the index in some
 custom way.
 
-=== Merging indexes
+=== Merging indexes #TODO
 
 == Auto testing #TODO
 
