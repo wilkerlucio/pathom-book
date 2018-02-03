@@ -17,4 +17,4 @@
 
 (app-types/register-app "contacts"
   (fn []
-    {::app-types/root (app-types/make-root {::app-types/Root ContactsApp})}))
+    {::app-types/root (app-types/make-root ContactsApp "contacts")}))

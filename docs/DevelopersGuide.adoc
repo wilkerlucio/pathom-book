@@ -1588,5 +1588,6 @@ If you want to use a GraphQL endpoint directly from the client, you are on the r
 ++++
 
 ++++
+<link rel="stylesheet" type="text/css" href="/assets/css/codemirror.css" />
 <script src="/assets/js/book/main.js"></script>
 ++++

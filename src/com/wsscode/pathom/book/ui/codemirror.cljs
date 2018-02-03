@@ -3,9 +3,9 @@
             [fulcro.client.dom :as dom]
             [goog.object :as gobj]
             [goog.functions :as gfun]
-            ["codemirror" :as cm]
-            ["codemirror/mode/clojure"]
-            ["codemirror/mode/javascript"]
+            ["codemirror/lib/codemirror" :as cm]
+            ["codemirror/mode/clojure/clojure"]
+            ["codemirror/mode/javascript/javascript"]
             ["parinfer"]
             ["parinfer-codemirror" :as pcm]
             [cljs.spec.alpha :as s]))
@@ -39,41 +39,36 @@
        (into {})
        (clj->js)))
 
-(fp/defsc Editor [this props _ css]
+(fp/defsc Editor [this props]
   {:componentWillMount
-   (fn [this]
+   (fn []
      (let [f (gobj/get this "componentWillReceiveProps")]
        (gobj/set this "componentWillReceiveProps"
          (gfun/debounce #(.call f this %) 0))))
 
    :componentWillReceiveProps
-   (fn [this {:keys [value]}]
+   (fn [{:keys [value]}]
      (let [cm        (gobj/get this "codemirror")
            cur-value (.getValue cm)]
        (if (and cm value (not= value cur-value))
          (.setValue cm value))))
 
    :componentDidMount
-   (fn [this]
-     (let [f (gobj/get this "componentWillReceiveProps")]
-       (gobj/set this "componentWillReceiveProps"
-         (gfun/debounce #(.call f this %) 0))))
-
-   :componentDidMount
-   (let [textarea   (gobj/get this "textNode")
-         options    (-> this fp/props ::options (or {}) clj->js)
-         process    (-> this fp/props ::process)
-         codemirror (cm/fromTextArea textarea options)]
-     (try
-       (.on codemirror "change" #(if (not= (gobj/get % "origin") "setValue")
-                                   (prop-call this :onChange (.getValue %))))
-       (.setValue codemirror (-> this fp/props :value))
-       (if process (process codemirror))
-       (catch :default e (js/console.warn "Error setting up CodeMirror" e)))
-     (gobj/set this "codemirror" codemirror))
+   (fn []
+     (let [textarea   (gobj/get this "textNode")
+           options    (-> this fp/props ::options (or {}) clj->js)
+           process    (-> this fp/props ::process)
+           codemirror (cm/fromTextArea textarea options)]
+       (try
+         (.on codemirror "change" #(if (not= (gobj/get % "origin") "setValue")
+                                     (prop-call this :onChange (.getValue %))))
+         (.setValue codemirror (-> this fp/props :value))
+         (if process (process codemirror))
+         (catch :default e (js/console.warn "Error setting up CodeMirror" e)))
+       (gobj/set this "codemirror" codemirror)))
 
    :componentWillUnmount
-   (fn [this]
+   (fn []
      (if-let [cm (gobj/get this "codemirror")]
        (.toTextArea cm)))}
 
@@ -81,11 +76,7 @@
     (dom/create-element "textarea"
       #js {:ref #(gobj/set this "textNode" %)})))
 
-(def editor (fp/factory Editor {:validator #(if (s/valid? ::props %)
-                                              true
-                                              (do
-                                                (js/console.warn (s/explain-str ::props %))
-                                                false))}))
+(def editor (fp/factory Editor))
 
 (defn clojure [props]
   (let [options {::lineNumbers true

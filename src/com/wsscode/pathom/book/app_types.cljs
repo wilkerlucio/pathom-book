@@ -2,10 +2,11 @@
   (:require [fulcro.client.primitives :as fp]
             [fulcro.client :as fulcro]))
 
-(defn make-root [{::keys [Root]}]
+(defn make-root [Root app-id]
   (fp/ui
     static fp/InitialAppState
-    (initial-state [_ params] {:ui/root (fp/get-initial-state Root params)})
+    (initial-state [_ params] {:fulcro.inspect.core/app-id app-id
+                               :ui/root (fp/get-initial-state Root params)})
 
     static fp/IQuery
     (query [_] [{:ui/root (fp/get-query Root)}])

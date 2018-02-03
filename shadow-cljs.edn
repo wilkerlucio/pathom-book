@@ -5,6 +5,8 @@
                 [fulcrologic/fulcro-inspect "2.0.0-alpha5"]
                 [binaryage/devtools "0.9.9"]]
 
+ :nrepl        {:port 59121}
+
  :source-paths ["src"]
 
  :builds       {:book {:target     :browser
