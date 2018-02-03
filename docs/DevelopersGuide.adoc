@@ -31,6 +31,10 @@ endif::[]
 
 = Introduction
 
+++++
+<div x-app="edn-graphql-converter"></div>
+++++
+
 The `pathom` library provides a rich set of functionality to build robust parsers to
 process Clojure queries using the Om.next query format (which is an extended version of
 the Datomic pull syntax):
@@ -1564,4 +1568,25 @@ custom way.
 
 == Exploration with OgE #TODO
 
-== GraphQL Integration #TODO
+= GraphQL Integration
+
+The EDN query syntax has feature partity with GraphQL
+
+Pathom provides a collection of utilities to integrate with GraphQL. In the following
+sections you gonna learn a couple of different ways to make this integration.
+
+== Fulcro Network
+
+If you want to use a GraphQL endpoint directly from the client, you are on the right place!
+
+== Connect #TODO
+
+== EDN->GraphQL #TODO
+
+++++
+<div x-app="contacts"></div>
+++++
+
+++++
+<script src="/assets/js/book/main.js"></script>
+++++

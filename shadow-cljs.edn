@@ -11,7 +11,7 @@
                        :output-dir "docs/assets/js/book"
                        :asset-path "/assets/js/book"
                        :devtools   {:preloads   [devtools.preload fulcro.inspect.preload]
-                                    :after-load com.wsscode.pathom.book.main/update-apps
+                                    :after-load com.wsscode.pathom.book.app-types/update-apps
                                     :http-root  "docs"
                                     :http-port  8080}
                        :modules    {:main {:entries [com.wsscode.pathom.book.main]}}}}}
