@@ -1,6 +1,7 @@
 (ns com.wsscode.pathom.book.app-types
   (:require [fulcro.client.primitives :as fp]
-            [fulcro.client :as fulcro]))
+            [fulcro.client :as fulcro]
+            [fulcro-css.css :as css]))
 
 (defn make-root [Root app-id]
   (fp/ui
@@ -10,6 +11,10 @@
 
     static fp/IQuery
     (query [_] [{:ui/root (fp/get-query Root)}])
+
+    static css/CSS
+    (local-rules [_] [])
+    (include-children [_] [Root])
 
     Object
     (render [this]
@@ -32,5 +37,6 @@
     (let [id  (random-uuid)
           {::keys [root app]} (app-factory)
           app (or app (fulcro/new-fulcro-client))]
+      (css/upsert-css id root)
       (swap! apps assoc id {::app app ::root root ::node node}))
     (js/console.warn "App type" name "is not registered")))

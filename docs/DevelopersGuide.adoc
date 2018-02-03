@@ -31,10 +31,6 @@ endif::[]
 
 = Introduction
 
-++++
-<div x-app="edn-graphql-converter"></div>
-++++
-
 The `pathom` library provides a rich set of functionality to build robust parsers to
 process Clojure queries using the Om.next query format (which is an extended version of
 the Datomic pull syntax):
@@ -1582,6 +1578,10 @@ If you want to use a GraphQL endpoint directly from the client, you are on the r
 == Connect #TODO
 
 == EDN->GraphQL #TODO
+
+++++
+<div x-app="edn-graphql-converter"></div>
+++++
 
 ++++
 <div x-app="contacts"></div>

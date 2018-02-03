@@ -1,5 +1,6 @@
 (ns com.wsscode.pathom.book.ui.codemirror
-  (:require [fulcro.client.primitives :as fp]
+  (:require [cljs.spec.alpha :as s]
+            [fulcro.client.primitives :as fp]
             [fulcro.client.dom :as dom]
             [goog.object :as gobj]
             [goog.functions :as gfun]
@@ -7,8 +8,7 @@
             ["codemirror/mode/clojure/clojure"]
             ["codemirror/mode/javascript/javascript"]
             ["parinfer"]
-            ["parinfer-codemirror" :as pcm]
-            [cljs.spec.alpha :as s]))
+            ["parinfer-codemirror" :as pcm]))
 
 (s/def ::mode (s/or :string string? :obj map?))
 (s/def ::theme string?)
