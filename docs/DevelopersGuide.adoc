@@ -1579,6 +1579,9 @@ If you want to use a GraphQL endpoint directly from the client, you are on the r
 
 == EDN->GraphQL #TODO
 
+Here you can try an interactive convertor. Type your EDN graph query on the left side
+and see the GraphQL equivalent been generated on the right.
+
 ++++
 <div x-app="edn-graphql-converter"></div>
 ++++

@@ -6,7 +6,7 @@
             [goog.functions :as gfun]
             ["codemirror/lib/codemirror" :as cm]
             ["codemirror/mode/clojure/clojure"]
-            ["codemirror/mode/javascript/javascript"]
+            ["codemirror-graphql/mode"]
             ["parinfer"]
             ["parinfer-codemirror" :as pcm]))
 
@@ -77,6 +77,12 @@
       #js {:ref #(gobj/set this "textNode" %)})))
 
 (def editor (fp/factory Editor))
+
+(defn graphql [props]
+  (let [options {::lineNumbers true
+                 ::mode        "graphql"}]
+    (editor (-> props
+                (update ::options #(merge options %))))))
 
 (defn clojure [props]
   (let [options {::lineNumbers true

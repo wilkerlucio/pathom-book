@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "codemirror": "^5.34.0",
+    "codemirror-graphql": "^0.6.12",
     "parinfer": "^3.12.0",
     "parinfer-codemirror": "^1.4.2"
   }
