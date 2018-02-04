@@ -76,14 +76,24 @@
    :ident         [::id ::id]
    :query         [::id ::query-examples
                    {::translator (fp/get-query GraphQlQueryTranslator)}]
-   :css           []
+   :css           [[:.button {:border        "1px solid #ccc"
+                              :border-radius "4px"
+                              :color         "#333"
+                              :outline       "0"
+                              :margin-right  "10px"
+                              :margin-bottom "12px"
+                              :padding       "6px 12px"}
+                    [:&:hover {:background-color "#e6e6e6"
+                               :border-color     "#adadad"}]]]
    :css-include   [GraphQlQueryTranslator]}
   (dom/div nil
-    (for [[title example] query-examples]
-      (dom/button #js {:key     title
-                       :onClick #(ref-transact! this translator ::id
-                                   `[(update-query {:ui/om-next-query ~(pretty-print-string example)})])}
-        title))
+    (dom/div nil
+      (for [[title example] query-examples]
+        (dom/button #js {:key       title
+                         :className (:button css)
+                         :onClick   #(ref-transact! this translator ::id
+                                       `[(update-query {:ui/om-next-query ~(pretty-print-string example)})])}
+          title)))
     (graphql-query-translator translator)))
 
 (app-types/register-app "edn-graphql-converter"
