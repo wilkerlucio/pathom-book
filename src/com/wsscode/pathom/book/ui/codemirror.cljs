@@ -59,12 +59,16 @@
            options    (-> this fp/props ::options (or {}) clj->js)
            process    (-> this fp/props ::process)
            codemirror (cm/fromTextArea textarea options)]
-       (try
-         (.on codemirror "change" #(if (not= (gobj/get % "origin") "setValue")
-                                     (prop-call this :onChange (.getValue %))))
-         (.setValue codemirror (-> this fp/props :value))
-         (if process (process codemirror))
-         (catch :default e (js/console.warn "Error setting up CodeMirror" e)))
+       ; avoid running transaction on mount
+       (js/setTimeout
+         (fn []
+           (try
+             (.on codemirror "change" #(if (not= (gobj/get % "origin") "setValue")
+                                         (prop-call this :onChange (.getValue %))))
+             (.setValue codemirror (-> this fp/props :value))
+             (if process (process codemirror))
+             (catch :default e (js/console.warn "Error setting up CodeMirror" e))))
+         10)
        (gobj/set this "codemirror" codemirror)))
 
    :componentWillUnmount
