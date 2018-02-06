@@ -1566,28 +1566,99 @@ custom way.
 
 = GraphQL Integration
 
-The EDN query syntax has feature partity with GraphQL
-
 Pathom provides a collection of utilities to integrate with GraphQL. In the following
 sections you gonna learn a couple of different ways to make this integration.
 
 == Fulcro Network
 
-If you want to use a GraphQL endpoint directly from the client, you are on the right place!
+Thanks to a feature parity with GraphQL, it is possible to use a GraphQL endpoint directly
+from the client.
+
+=== Pulling data
+
+Github provides a https://developer.github.com/v4[public GraphQL API]. Let's see how
+we can read some data strait from then. Using the https://developer.github.com/v4/explorer/[explorer],
+try the following query:
+
+[source,graphql]
+----
+query {
+  viewer {
+    id
+    name
+  }
+}
+----
+
+This should print your id and name. In EDN syntax, we can write an equivalent query:
+
+[source,clojure]
+----
+[{:viewer
+  [:id :name]}]
+----
+
+Check the <<edn_gql,EDN->GraphQL>> tool for more translation examples.
+
+Now let's build a view using that query:
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/name_query.cljs[]
+----
+
+<1> Require the namespace containing the fulcro network helpers
+<2> We get just the subquery related to the user data and put in this component
+<3> The viewer goes on the root query
+<4> Trigger the load for the `:viewer`
+<5> Setup the GraphQL network, it's a Fulcro network that does the query translation automatically
+
+You can try this example here, just get yourself a github personal token.
+
+++++
+<div x-app="demo-fulcro-network-name-query"></div>
+++++
+
+=== Calling mutations
+
+=== Custom reads
+
+=== Multiple Networks
+
+In this example we are going to use a service called https://www.graph.cool/[graph.cool]
+
+[source,graphql]
+----
+type Group @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  name: String
+  contacts: [Contact!]! @relation(name: "GroupOnContact")
+}
+
+type Contact @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  github: String @isUnique
+  groups: [Group!]! @relation(name: "GroupOnContact")
+}
+----
+
+++++
+<div xx-app="contacts"></div>
+++++
 
 == Connect #TODO
 
-== EDN->GraphQL #TODO
+== EDN->GraphQL #TODO [[edn_gql]]
 
 Here you can try an interactive convertor. Type your EDN graph query on the left side
 and see the GraphQL equivalent been generated on the right.
 
 ++++
 <div x-app="edn-graphql-converter"></div>
-++++
-
-++++
-<div x-app="contacts"></div>
 ++++
 
 ++++

@@ -610,9 +610,16 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_graphql_integration">5. GraphQL Integration</a>
 <ul class="sectlevel2">
-<li><a href="#_fulcro_network">5.1. Fulcro Network</a></li>
+<li><a href="#_fulcro_network">5.1. Fulcro Network</a>
+<ul class="sectlevel3">
+<li><a href="#_pulling_data">5.1.1. Pulling data</a></li>
+<li><a href="#_calling_mutations">5.1.2. Calling mutations</a></li>
+<li><a href="#_custom_reads">5.1.3. Custom reads</a></li>
+<li><a href="#_multiple_networks">5.1.4. Multiple Networks</a></li>
+</ul>
+</li>
 <li><a href="#_connect_todo">5.2. Connect #TODO</a></li>
-<li><a href="#_edn_graphql_todo">5.3. EDN&#8594;GraphQL #TODO</a></li>
+<li><a href="#edn_gql">5.3. EDN&#8594;GraphQL #TODO</a></li>
 </ul>
 </li>
 </ul>
@@ -2466,16 +2473,140 @@ custom way.</p>
 <h2 id="_graphql_integration"><a class="anchor" href="#_graphql_integration"></a><a class="link" href="#_graphql_integration">5. GraphQL Integration</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The EDN query syntax has feature partity with GraphQL</p>
-</div>
-<div class="paragraph">
 <p>Pathom provides a collection of utilities to integrate with GraphQL. In the following
 sections you gonna learn a couple of different ways to make this integration.</p>
 </div>
 <div class="sect2">
 <h3 id="_fulcro_network"><a class="anchor" href="#_fulcro_network"></a><a class="link" href="#_fulcro_network">5.1. Fulcro Network</a></h3>
 <div class="paragraph">
-<p>If you want to use a GraphQL endpoint directly from the client, you are on the right place!</p>
+<p>Thanks to a feature parity with GraphQL, it is possible to use a GraphQL endpoint directly
+from the client.</p>
+</div>
+<div class="sect3">
+<h4 id="_pulling_data"><a class="anchor" href="#_pulling_data"></a><a class="link" href="#_pulling_data">5.1.1. Pulling data</a></h4>
+<div class="paragraph">
+<p>Github provides a <a href="https://developer.github.com/v4">public GraphQL API</a>. Let&#8217;s see how
+we can read some data strait from then. Using the <a href="https://developer.github.com/v4/explorer/">explorer</a>,
+try the following query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="graphql">query {
+  viewer {
+    id
+    name
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This should print your id and name. In EDN syntax, we can write an equivalent query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">[{<span class="symbol">:viewer</span>
+  [<span class="symbol">:id</span> <span class="symbol">:name</span>]}]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check the <a href="#edn_gql">EDN&#8594;GraphQL</a> tool for more translation examples.</p>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s build a view using that query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.name-query</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn] <span class="comment">; </span><b class="conum">(1)</b>
+            [fulcro.client <span class="symbol">:as</span> fulcro]
+            [fulcro.client.dom <span class="symbol">:as</span> dom]
+            [fulcro.client.data-fetch <span class="symbol">:as</span> fetch]
+            [fulcro.client.primitives <span class="symbol">:as</span> fp]))
+
+(fp/defsc GithubUserView
+  [_ {<span class="symbol">:keys</span> [<span class="keyword">name</span>]}]
+  {<span class="symbol">:query</span> [<span class="symbol">:id</span> <span class="symbol">:name</span>] <span class="comment">; </span><b class="conum">(2)</b>
+   <span class="symbol">:ident</span> [<span class="symbol">:id</span> <span class="symbol">:id</span>]}
+  (dom/div <span class="predefined-constant">nil</span>
+    (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">My Github name is: </span><span class="delimiter">&quot;</span></span> <span class="keyword">name</span>)))
+
+(<span class="keyword">def</span> <span class="function">github-user-view</span> (fp/factory GithubUserView {<span class="symbol">:keyfn</span> <span class="symbol">:id</span>}))
+
+(fp/defsc Root
+  [_ {<span class="symbol">:keys</span> [viewer]}]
+  {<span class="symbol">:query</span> [{<span class="symbol">:viewer</span> (fp/get-query GithubUserView)}]} <span class="comment">; </span><b class="conum">(3)</b>
+  (github-user-view viewer))
+
+(<span class="keyword">defn</span> <span class="function">make-app</span> [token]
+  (fulcro/new-fulcro-client
+    <span class="symbol">:started-callback</span>
+    (<span class="keyword">fn</span> [{<span class="symbol">:keys</span> [reconciler]}]
+      (js/console.log <span class="string"><span class="delimiter">&quot;</span><span class="content">started user view</span><span class="delimiter">&quot;</span></span>)
+      (fetch/load reconciler <span class="symbol">:viewer</span> GithubUserView)) <span class="comment">; </span><b class="conum">(4)</b>
+
+    <span class="symbol">:networking</span>
+    {<span class="symbol">:remote</span>
+     (pfn/graphql-network <span class="comment">; </span><b class="conum">(5)</b>
+       {<span class="symbol">::pfn/url</span> (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">https://api.github.com/graphql?access_token=</span><span class="delimiter">&quot;</span></span> token)})}))</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>Require the namespace containing the fulcro network helpers</p>
+</li>
+<li>
+<p>We get just the subquery related to the user data and put in this component</p>
+</li>
+<li>
+<p>The viewer goes on the root query</p>
+</li>
+<li>
+<p>Trigger the load for the <code>:viewer</code></p>
+</li>
+<li>
+<p>Setup the GraphQL network, it&#8217;s a Fulcro network that does the query translation automatically</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You can try this example here, just get yourself a github personal token.</p>
+</div>
+<div x-app="demo-fulcro-network-name-query"></div>
+</div>
+<div class="sect3">
+<h4 id="_calling_mutations"><a class="anchor" href="#_calling_mutations"></a><a class="link" href="#_calling_mutations">5.1.2. Calling mutations</a></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_custom_reads"><a class="anchor" href="#_custom_reads"></a><a class="link" href="#_custom_reads">5.1.3. Custom reads</a></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_multiple_networks"><a class="anchor" href="#_multiple_networks"></a><a class="link" href="#_multiple_networks">5.1.4. Multiple Networks</a></h4>
+<div class="paragraph">
+<p>In this example we are going to use a service called <a href="https://www.graph.cool/">graph.cool</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="graphql">type Group @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  name: String
+  contacts: [Contact!]! @relation(name: &quot;GroupOnContact&quot;)
+}
+
+type Contact @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  github: String @isUnique
+  groups: [Group!]! @relation(name: &quot;GroupOnContact&quot;)
+}</code></pre>
+</div>
+</div>
+<div xx-app="contacts"></div>
 </div>
 </div>
 <div class="sect2">
@@ -2483,13 +2614,12 @@ sections you gonna learn a couple of different ways to make this integration.</p
 
 </div>
 <div class="sect2">
-<h3 id="_edn_graphql_todo"><a class="anchor" href="#_edn_graphql_todo"></a><a class="link" href="#_edn_graphql_todo">5.3. EDN&#8594;GraphQL #TODO</a></h3>
+<h3 id="edn_gql"><a class="anchor" href="#edn_gql"></a><a class="link" href="#edn_gql">5.3. EDN&#8594;GraphQL #TODO</a></h3>
 <div class="paragraph">
 <p>Here you can try an interactive convertor. Type your EDN graph query on the left side
 and see the GraphQL equivalent been generated on the right.</p>
 </div>
 <div x-app="edn-graphql-converter"></div>
-<div x-app="contacts"></div>
 <link rel="stylesheet" type="text/css" href="/assets/css/codemirror.css" />
 <script src="/assets/js/book/main.js"></script>
 </div>
@@ -2499,7 +2629,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-04 13:08:49 -02
+Last updated 2018-02-06 02:00:46 -02
 </div>
 </div>
 </body>
