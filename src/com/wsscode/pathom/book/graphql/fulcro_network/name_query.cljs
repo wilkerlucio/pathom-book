@@ -10,7 +10,7 @@
   {:query [:id :name] ; <2>
    :ident [:id :id]}
   (dom/div nil
-    (str "My Github name is: " name)))
+    (str name ", congrats on your Fulcro + GraphQL integration!")))
 
 (def github-user-view (fp/factory GithubUserView {:keyfn :id}))
 
