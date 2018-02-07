@@ -20,11 +20,10 @@
   {:initial-state (fn [_] {})
    :ident         (fn [] [::starred "singleton"])
    :query         (fn []
-                    [(list {:github/starred-repositories
-                            [{:nodes (fp/get-query Repository)}]}
-                       '{:first    10
-                         :order-by {:field     STARRED_AT
-                                    :direction DESC}})
+                    [{'(:github/starred-repositories {:first    10
+                                                      :order-by {:field     STARRED_AT
+                                                                 :direction DESC}})
+                      [{:nodes (fp/get-query Repository)}]}
                      [df/marker-table ::loading]])
    :css           [[:.title {:margin-bottom "8px"
                              :font-weight   "bold"}]]}
