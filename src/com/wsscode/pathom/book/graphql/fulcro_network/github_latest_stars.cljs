@@ -1,5 +1,6 @@
 (ns com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars
-  (:require [com.wsscode.pathom.fulcro.network :as pfn]
+  (:require [com.wsscode.pathom.book.ui.util :as ui]
+            [com.wsscode.pathom.fulcro.network :as pfn]
             [fulcro.client :as fulcro]
             [fulcro.client.data-fetch :as df]
             [fulcro.client.dom :as dom]
@@ -16,7 +17,7 @@
 (def repository (fp/factory Repository {:keyfn :github.repository/id}))
 
 (fp/defsc LastestStarred
-  [this {:keys [github/starred-repositories] :as props} _ css]
+  [this {:keys [github/starred-repositories]} _ css]
   {:initial-state (fn [_] {})
    :ident         (fn [] [::starred "singleton"])
    :query         (fn [] ; <1>
@@ -26,16 +27,23 @@
                       [{:nodes (fp/get-query Repository)}]}
                      [df/marker-table ::loading]])
    :css           [[:.title {:margin-bottom "8px"
-                             :font-weight   "bold"}]]}
-  (let [marker (get props [df/marker-table ::loading])]
+                             :font-weight   "bold"}]
+                   [:.button {:margin-top "10px"}]]}
+  (let [loading? (ui/loading? this ::loading)]
     (dom/div nil
       (cond
         starred-repositories
         (dom/div nil
           (dom/div #js {:className (:title css)} "The last repositories you added a star to:")
-          (map repository (:nodes starred-repositories)))
+          (map repository (:nodes starred-repositories))
+          (dom/button #js {:onClick
+                           #(df/load this :viewer LastestStarred {:target [:ui/root]
+                                                                  :marker ::loading})
+                           :className (:button css)
+                           :disabled loading?}
+            (if loading? "Loading..." "Reload")))
 
-        (df/loading? marker)
+        loading?
         "Loading..."
 
         :else
