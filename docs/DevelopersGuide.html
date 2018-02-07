@@ -2604,11 +2604,11 @@ GraphQL with this query:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars</span>
-  (<span class="symbol">:require</span> [fulcro.client.dom <span class="symbol">:as</span> dom]
-            [fulcro.client.primitives <span class="symbol">:as</span> fp]
+  (<span class="symbol">:require</span> [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
             [fulcro.client <span class="symbol">:as</span> fulcro]
-            [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
-            [fulcro.client.data-fetch <span class="symbol">:as</span> df]))
+            [fulcro.client.data-fetch <span class="symbol">:as</span> df]
+            [fulcro.client.dom <span class="symbol">:as</span> dom]
+            [fulcro.client.primitives <span class="symbol">:as</span> fp]))
 
 (fp/defsc Repository
   [this {<span class="symbol">:github.repository/keys</span> [name-with-owner]}]
@@ -2625,16 +2625,14 @@ GraphQL with this query:</p>
   {<span class="symbol">:initial-state</span> (<span class="keyword">fn</span> [_] {})
    <span class="symbol">:ident</span>         (<span class="keyword">fn</span> [] [<span class="symbol">::starred</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">singleton</span><span class="delimiter">&quot;</span></span>])
    <span class="symbol">:query</span>         (<span class="keyword">fn</span> []
-                    [(<span class="keyword">list</span> {<span class="symbol">:github/starred-repositories</span>
-                            [{<span class="symbol">:nodes</span> (fp/get-query Repository)}]}
-                       '{<span class="symbol">:first</span>    <span class="integer">10</span>
-                         <span class="symbol">:order-by</span> {<span class="symbol">:field</span>     STARRED_AT
-                                    <span class="symbol">:direction</span> DESC}})
+                    [{'(<span class="symbol">:github/starred-repositories</span> {<span class="symbol">:first</span>    <span class="integer">10</span>
+                                                      <span class="symbol">:order-by</span> {<span class="symbol">:field</span>     STARRED_AT
+                                                                 <span class="symbol">:direction</span> DESC}})
+                      [{<span class="symbol">:nodes</span> (fp/get-query Repository)}]}
                      [df/marker-table <span class="symbol">::loading</span>]])
    <span class="symbol">:css</span>           [[<span class="symbol">:.</span>title {<span class="symbol">:margin-bottom</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">8px</span><span class="delimiter">&quot;</span></span>
                              <span class="symbol">:font-weight</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span>}]]}
   (<span class="keyword">let</span> [marker (<span class="keyword">get</span> props [df/marker-table <span class="symbol">::loading</span>])]
-    (js/console.log <span class="string"><span class="delimiter">&quot;</span><span class="content">latest</span><span class="delimiter">&quot;</span></span> props)
     (dom/div <span class="predefined-constant">nil</span>
       (<span class="keyword">cond</span>
         starred-repositories
@@ -2666,6 +2664,92 @@ GraphQL with this query:</p>
 </div>
 <div class="sect3">
 <h4 id="_calling_mutations"><a class="anchor" href="#_calling_mutations"></a><a class="link" href="#_calling_mutations">5.1.2. Calling mutations</a></h4>
+<div class="paragraph">
+<p>At some point, we might wanna change things, so it&#8217;s time for mutations! To demonstrate
+how to use mutations, we will write an app that can add star to some projects on Github.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.github-mutation-stars</span>
+  (<span class="symbol">:require</span> [clojure.string <span class="symbol">:as</span> <span class="keyword">str</span>]
+            [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
+            [fulcro.client <span class="symbol">:as</span> fulcro]
+            [fulcro.client.dom <span class="symbol">:as</span> dom]
+            [fulcro.client.mutations <span class="symbol">:as</span> mutations]
+            [fulcro.client.primitives <span class="symbol">:as</span> fp]))
+
+(mutations/defmutation add-star [_]
+  (action [{<span class="symbol">:keys</span> [state <span class="keyword">ref</span>]}]
+    (<span class="keyword">swap!</span> state <span class="keyword">update-in</span> <span class="keyword">ref</span> <span class="keyword">assoc</span> <span class="symbol">:github.repository/viewer-has-starred</span> <span class="predefined-constant">true</span>))
+  (remote [_] <span class="predefined-constant">true</span>))
+
+(fp/defsc StarRepo
+  [this {<span class="symbol">:github.repository/keys</span> [id <span class="keyword">name</span> name-with-owner viewer-has-starred]} _ css]
+  {<span class="symbol">:initial-state</span> {}
+   <span class="symbol">:ident</span>         (<span class="keyword">fn</span> []
+                    (<span class="keyword">let</span> [[owner <span class="keyword">name</span>] (str/split name-with-owner <span class="regexp"><span class="delimiter">#&quot;</span><span class="content">/</span><span class="delimiter">&quot;</span></span>)]
+                      [<span class="symbol">:github.repository/owner-and-name</span> [owner <span class="keyword">name</span>]]))
+   <span class="symbol">:query</span>         [<span class="symbol">:github.repository/id</span>
+                   <span class="symbol">:github.repository/name</span>
+                   <span class="symbol">:github.repository/name-with-owner</span>
+                   <span class="symbol">:github.repository/viewer-has-starred</span>]
+   <span class="symbol">:css</span>           [[<span class="symbol">:div</span> [<span class="symbol">:.</span>button {<span class="symbol">:display</span>     <span class="string"><span class="delimiter">&quot;</span><span class="content">flex</span><span class="delimiter">&quot;</span></span>
+                                    <span class="symbol">:align-items</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">center</span><span class="delimiter">&quot;</span></span>
+                                    <span class="symbol">:margin</span>      <span class="string"><span class="delimiter">&quot;</span><span class="content">14px 0</span><span class="delimiter">&quot;</span></span>}]]
+                   [<span class="symbol">:.</span>heart {<span class="symbol">:text-shadow</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">0 0 0 #2f2f2f</span><span class="delimiter">&quot;</span></span>
+                             <span class="symbol">:color</span>         <span class="string"><span class="delimiter">&quot;</span><span class="content">transparent</span><span class="delimiter">&quot;</span></span>
+                             <span class="symbol">:transition</span>    <span class="string"><span class="delimiter">&quot;</span><span class="content">text-shadow 300ms</span><span class="delimiter">&quot;</span></span>
+                             <span class="symbol">:font-size</span>     <span class="string"><span class="delimiter">&quot;</span><span class="content">28px</span><span class="delimiter">&quot;</span></span>
+                             <span class="symbol">:margin-bottom</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">-3px</span><span class="delimiter">&quot;</span></span>
+                             <span class="symbol">:margin-right</span>  <span class="string"><span class="delimiter">&quot;</span><span class="content">14px</span><span class="delimiter">&quot;</span></span>}
+                    [<span class="symbol">:&amp;.red</span> {<span class="symbol">:text-shadow</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">0 0 0 #f50909</span><span class="delimiter">&quot;</span></span>}]]]
+   <span class="symbol">:css-include</span>   []}
+  (dom/div <span class="predefined-constant">nil</span>
+    (dom/button <span class="error">#</span>js {<span class="symbol">:onClick</span>   #(fp/transact! this `[{(add-star {<span class="symbol">:input</span> {<span class="symbol">:starrable-id</span> ~id}})
+                                                       [<span class="symbol">:client-mutation-id</span>]}])
+                     <span class="symbol">:disabled</span>  viewer-has-starred
+                     <span class="symbol">:className</span> (<span class="symbol">:button</span> css)}
+      (dom/div <span class="error">#</span>js {<span class="symbol">:className</span> (<span class="keyword">str</span> (<span class="symbol">:heart</span> css) <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>
+                                    (<span class="keyword">if</span> viewer-has-starred (<span class="symbol">:red</span> css)))}
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">❤️</span><span class="delimiter">&quot;</span></span>)
+      (<span class="keyword">if</span> viewer-has-starred
+        (dom/div <span class="predefined-constant">nil</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Great, thanks for the </span><span class="delimiter">&quot;</span></span> (dom/strong <span class="predefined-constant">nil</span> <span class="keyword">name</span>) <span class="string"><span class="delimiter">&quot;</span><span class="content"> love!</span><span class="delimiter">&quot;</span></span>)
+        (dom/div <span class="predefined-constant">nil</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Give love (star) to </span><span class="delimiter">&quot;</span></span> (dom/strong <span class="predefined-constant">nil</span> <span class="keyword">name</span>))))))
+
+(<span class="keyword">def</span> <span class="function">star-repo</span> (fp/factory StarRepo {<span class="symbol">:keyfn</span> <span class="symbol">:github.repository/name-with-owner</span>}))
+
+(fp/defsc GithubStars [_ {<span class="symbol">::keys</span> [repos]}]
+  {<span class="symbol">:initial-state</span> (<span class="keyword">fn</span> [_]
+                    {<span class="symbol">::repos</span> [<span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">wilkerlucio/pathom</span><span class="delimiter">&quot;</span></span>}
+                              <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic/fulcro</span><span class="delimiter">&quot;</span></span>}
+                              <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic/fulcro-css</span><span class="delimiter">&quot;</span></span>}
+                              <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic/fulcro-inspect</span><span class="delimiter">&quot;</span></span>}
+                              <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic/fulcro-spec</span><span class="delimiter">&quot;</span></span>}]})
+   <span class="symbol">:ident</span>         (<span class="keyword">fn</span> [] [<span class="symbol">::github-stars</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">singleton</span><span class="delimiter">&quot;</span></span>])
+   <span class="symbol">:query</span>         [{<span class="symbol">::repos</span> (fp/get-query StarRepo)}]
+   <span class="symbol">:css-include</span>   [StarRepo]}
+  (dom/div <span class="predefined-constant">nil</span>
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">Use the buttons bellow to send love to our favorite UI kit tools!</span><span class="delimiter">&quot;</span></span>
+    (<span class="keyword">if</span> (<span class="keyword">-&gt;</span> repos <span class="keyword">first</span> <span class="symbol">:github.repository/id</span>)
+      (<span class="keyword">map</span> star-repo repos))))
+
+(<span class="keyword">defn</span> <span class="function">new-client</span> [token]
+  (fulcro/new-fulcro-client
+    <span class="symbol">:started-callback</span>
+    (<span class="keyword">fn</span> [{<span class="symbol">:keys</span> [reconciler]}]
+      (fp/transact! reconciler [(<span class="keyword">list</span> 'fulcro/load {<span class="symbol">:query</span>   [{[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">wilkerlucio</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">pathom</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
+                                                              {[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcro</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
+                                                              {[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcro-css</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
+                                                              {[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcro-inspect</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
+                                                              {[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcro-spec</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}]
+                                                    <span class="symbol">:refresh</span> [<span class="symbol">::repos</span>]})]))
+
+    <span class="symbol">:networking</span>
+    {<span class="symbol">:remote</span>
+     (pfn/graphql-network
+       {<span class="symbol">::pfn/url</span> (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">https://api.github.com/graphql?access_token=</span><span class="delimiter">&quot;</span></span> token)})}))</code></pre>
+</div>
+</div>
 <div x-app="demo-fulcro-network-github-stars"></div>
 </div>
 <div class="sect3">
@@ -2720,7 +2804,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-06 23:04:04 -02
+Last updated 2018-02-07 00:24:09 -02
 </div>
 </div>
 </body>

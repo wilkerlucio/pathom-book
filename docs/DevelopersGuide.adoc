@@ -1652,6 +1652,14 @@ Demo:
 
 === Calling mutations
 
+At some point, we might wanna change things, so it's time for mutations! To demonstrate
+how to use mutations, we will write an app that can add star to some projects on Github.
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_mutation_stars.cljs[]
+----
+
 ++++
 <div x-app="demo-fulcro-network-github-stars"></div>
 ++++
