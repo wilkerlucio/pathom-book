@@ -3,8 +3,6 @@
 }
 
 .com_wsscode_pathom_book_graphql_fulcro-network_demos_RequireTokenApp__container button {
-  color: #fff;
-  background-color: #3a7cb5;
   display: inline-block;
   font-weight: 400;
   line-height: 1.25;
@@ -12,9 +10,19 @@
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
-  border: 1px solid #3a7cb5;
   padding: .5rem 1rem;
   font-size: 1rem;
   border-radius: .25rem;
   outline: 0;
+  transition: all 200ms;
+
+  color: #292b2c;
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.com_wsscode_pathom_book_graphql_fulcro-network_demos_RequireTokenApp__container button:hover {
+  color: #292b2c;
+  background-color: #e6e6e6;
+  border: 1px solid #adadad;
 }
