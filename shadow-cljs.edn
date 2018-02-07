@@ -12,8 +12,8 @@
  :builds       {:book {:target     :browser
                        :output-dir "docs/assets/js/book"
                        :asset-path "/assets/js/book"
-                       :devtools   {:preloads   [devtools.preload fulcro.inspect.preload]
+                       :devtools   {:preloads   [devtools.preload]
                                     :after-load com.wsscode.pathom.book.app-types/update-apps
                                     :http-root  "docs"
-                                    :http-port  8080}
+                                    :http-port  8082}
                        :modules    {:main {:entries [com.wsscode.pathom.book.main]}}}}}

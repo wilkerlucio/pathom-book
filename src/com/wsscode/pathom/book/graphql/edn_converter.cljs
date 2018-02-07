@@ -60,18 +60,26 @@
   [this {::keys [translator query-examples]} _ css]
   {:initial-state (fn [params]
                     {::id             (random-uuid)
-                     ::query-examples '{"Basic Query"        [:user/id :user/name]
-                                        "Joins"              [{:app/me [:user/id :user/name]}]
-                                        "Ident Query"        [{[:user/by-login "wilkerlucio"] [:bio :url]}
-                                                              {[:organization/by-login "clojure"] [:name :url]}]
-                                        "Parameterized join" [({:app/all-users [:user/id :user/name]}
-                                                                {:limit 10})]
-                                        "Union Query"        [{:app/timeline
-                                                               {:app/User     [:user/id :user/name]
-                                                                :app/Activity [:activity/id :activity/title
-                                                                               {:activity/user
-                                                                                [:user/name]}]}}]
-                                        "Mutation"           [(users/create {:user/id 123 :user/name "Foo"})]}
+                     ::query-examples '{"Simple"          [:user/id :user/name]
+                                        "Join"            [{:app/me [:user/id :user/name]}]
+                                        "Ident"           [{[:user/login "wilkerlucio"] [:bio :url]}
+                                                           {[:organization/login "clojure"] [:name :url]}
+                                                           {[:github.repository/name-and-owner ["pathom" "wilkerlucio"]] [:id :name]}]
+                                        "Join Parameters" [{(:app/all-users {:limit 10})
+                                                            [:user/id :user/name]}]
+                                        "Enums"           [{:viewer
+                                                            [{(:starred-repositories {:first    10
+                                                                                      :order-by {:field     STARRED_AT
+                                                                                                 :direction DESC}})
+                                                              [{:nodes
+                                                                [:id :name :updated-at]}]}]}]
+                                        "Union"           [{:app/timeline
+                                                            {:app/User     [:user/id :user/name]
+                                                             :app/Activity [:activity/id :activity/title
+                                                                            {:activity/user
+                                                                             [:user/name]}]}}]
+                                        "Mutation"        [{(users/create {:user/id 123 :user/name "Foo"})
+                                                            [:client-mutation-id]}]}
                      ::translator     (fp/get-initial-state GraphQlQueryTranslator params)})
    :ident         [::id ::id]
    :query         [::id ::query-examples

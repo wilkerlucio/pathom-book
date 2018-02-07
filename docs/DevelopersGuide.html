@@ -619,7 +619,7 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#_connect_todo">5.2. Connect #TODO</a></li>
-<li><a href="#edn_gql">5.3. EDN&#8594;GraphQL #TODO</a></li>
+<li><a href="#edn_gql">5.3. EDN&#8594;GraphQL</a></li>
 </ul>
 </li>
 </ul>
@@ -2516,34 +2516,41 @@ try the following query:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.name-query</span>
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.github-name</span>
   (<span class="symbol">:require</span> [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn] <span class="comment">; </span><b class="conum">(1)</b>
             [fulcro.client <span class="symbol">:as</span> fulcro]
             [fulcro.client.dom <span class="symbol">:as</span> dom]
-            [fulcro.client.data-fetch <span class="symbol">:as</span> fetch]
+            [fulcro.client.data-fetch <span class="symbol">:as</span> df]
             [fulcro.client.primitives <span class="symbol">:as</span> fp]))
 
 (fp/defsc GithubUserView
-  [_ {<span class="symbol">:keys</span> [<span class="keyword">name</span>]}]
-  {<span class="symbol">:query</span> [<span class="symbol">:id</span> <span class="symbol">:name</span>] <span class="comment">; </span><b class="conum">(2)</b>
+  [this {<span class="symbol">:keys</span> [<span class="keyword">name</span>] <span class="symbol">:as</span> props}]
+  {<span class="symbol">:query</span> [<span class="symbol">:id</span> <span class="symbol">:name</span> [df/marker-table <span class="symbol">::loading</span>]] <span class="comment">; </span><b class="conum">(2)</b>
    <span class="symbol">:ident</span> [<span class="symbol">:id</span> <span class="symbol">:id</span>]}
-  (dom/div <span class="predefined-constant">nil</span>
-    (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">My Github name is: </span><span class="delimiter">&quot;</span></span> <span class="keyword">name</span>)))
+  (<span class="keyword">let</span> [marker (<span class="keyword">get</span> props [df/marker-table <span class="symbol">::loading</span>])]
+    (dom/div <span class="predefined-constant">nil</span>
+      (<span class="keyword">cond</span>
+        <span class="keyword">name</span>
+        (<span class="keyword">str</span> <span class="keyword">name</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">, congrats on your Fulcro + GraphQL integration!</span><span class="delimiter">&quot;</span></span>)
+
+        (df/loading? marker)
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">Loading...</span><span class="delimiter">&quot;</span></span>
+
+        <span class="symbol">:else</span>
+        (dom/button <span class="error">#</span>js {<span class="symbol">:onClick</span> <span class="comment">; </span><b class="conum">(3)</b>
+                         #(df/load this <span class="symbol">:viewer</span> GithubUserView {<span class="symbol">:target</span> [<span class="symbol">:ui/root</span>]
+                                                                <span class="symbol">:marker</span> <span class="symbol">::loading</span>})}
+          <span class="string"><span class="delimiter">&quot;</span><span class="content">Load name</span><span class="delimiter">&quot;</span></span>)))))
 
 (<span class="keyword">def</span> <span class="function">github-user-view</span> (fp/factory GithubUserView {<span class="symbol">:keyfn</span> <span class="symbol">:id</span>}))
 
 (fp/defsc Root
   [_ {<span class="symbol">:keys</span> [viewer]}]
-  {<span class="symbol">:query</span> [{<span class="symbol">:viewer</span> (fp/get-query GithubUserView)}]} <span class="comment">; </span><b class="conum">(3)</b>
+  {<span class="symbol">:query</span> [{<span class="symbol">:viewer</span> (fp/get-query GithubUserView)}]} <span class="comment">; </span><b class="conum">(4)</b>
   (github-user-view viewer))
 
-(<span class="keyword">defn</span> <span class="function">make-app</span> [token]
+(<span class="keyword">defn</span> <span class="function">new-client</span> [token]
   (fulcro/new-fulcro-client
-    <span class="symbol">:started-callback</span>
-    (<span class="keyword">fn</span> [{<span class="symbol">:keys</span> [reconciler]}]
-      (js/console.log <span class="string"><span class="delimiter">&quot;</span><span class="content">started user view</span><span class="delimiter">&quot;</span></span>)
-      (fetch/load reconciler <span class="symbol">:viewer</span> GithubUserView)) <span class="comment">; </span><b class="conum">(4)</b>
-
     <span class="symbol">:networking</span>
     {<span class="symbol">:remote</span>
      (pfn/graphql-network <span class="comment">; </span><b class="conum">(5)</b>
@@ -2559,10 +2566,10 @@ try the following query:</p>
 <p>We get just the subquery related to the user data and put in this component</p>
 </li>
 <li>
-<p>The viewer goes on the root query</p>
+<p>Trigger the load for the <code>:viewer</code></p>
 </li>
 <li>
-<p>Trigger the load for the <code>:viewer</code></p>
+<p>The viewer goes on the root query</p>
 </li>
 <li>
 <p>Setup the GraphQL network, it&#8217;s a Fulcro network that does the query translation automatically</p>
@@ -2570,13 +2577,96 @@ try the following query:</p>
 </ol>
 </div>
 <div class="paragraph">
-<p>You can try this example here, just get yourself a github personal token.</p>
+<p>You can try this example here, you need to <a href="https://github.com/settings/tokens">generate a personal token on Github</a>,
+please add <code>public_repo</code> scope when you generate it, so you can try all the demo features.</p>
 </div>
-<div x-app="demo-fulcro-network-name-query"></div>
+<div x-app="demo-fulcro-network-github-name"></div>
+<div class="space"></div>
+<div class="paragraph">
+<p>What were the last projects you Github that you gave a star to? We can ask the Github
+GraphQL with this query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="graphql">{
+  viewer {
+    starredRepositories(first: 10, orderBy: {field: STARRED_AT, direction: DESC}) {
+      nodes {
+        id
+        name
+        updatedAt
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars</span>
+  (<span class="symbol">:require</span> [fulcro.client.dom <span class="symbol">:as</span> dom]
+            [fulcro.client.primitives <span class="symbol">:as</span> fp]
+            [fulcro.client <span class="symbol">:as</span> fulcro]
+            [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
+            [fulcro.client.data-fetch <span class="symbol">:as</span> df]))
+
+(fp/defsc Repository
+  [this {<span class="symbol">:github.repository/keys</span> [name-with-owner]}]
+  {<span class="symbol">:ident</span> [<span class="symbol">:github.repository/id</span> <span class="symbol">:github.repository/id</span>]
+   <span class="symbol">:query</span> [<span class="symbol">:github.repository/id</span>
+           <span class="symbol">:github.repository/name-with-owner</span>]}
+  (dom/div <span class="predefined-constant">nil</span>
+    (<span class="keyword">str</span> name-with-owner)))
+
+(<span class="keyword">def</span> <span class="function">repository</span> (fp/factory Repository {<span class="symbol">:keyfn</span> <span class="symbol">:github.repository/id</span>}))
+
+(fp/defsc LastestStarred
+  [this {<span class="symbol">:keys</span> [github/starred-repositories] <span class="symbol">:as</span> props} _ css]
+  {<span class="symbol">:initial-state</span> (<span class="keyword">fn</span> [_] {})
+   <span class="symbol">:ident</span>         (<span class="keyword">fn</span> [] [<span class="symbol">::starred</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">singleton</span><span class="delimiter">&quot;</span></span>])
+   <span class="symbol">:query</span>         (<span class="keyword">fn</span> []
+                    [(<span class="keyword">list</span> {<span class="symbol">:github/starred-repositories</span>
+                            [{<span class="symbol">:nodes</span> (fp/get-query Repository)}]}
+                       '{<span class="symbol">:first</span>    <span class="integer">10</span>
+                         <span class="symbol">:order-by</span> {<span class="symbol">:field</span>     STARRED_AT
+                                    <span class="symbol">:direction</span> DESC}})
+                     [df/marker-table <span class="symbol">::loading</span>]])
+   <span class="symbol">:css</span>           [[<span class="symbol">:.</span>title {<span class="symbol">:margin-bottom</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">8px</span><span class="delimiter">&quot;</span></span>
+                             <span class="symbol">:font-weight</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span>}]]}
+  (<span class="keyword">let</span> [marker (<span class="keyword">get</span> props [df/marker-table <span class="symbol">::loading</span>])]
+    (js/console.log <span class="string"><span class="delimiter">&quot;</span><span class="content">latest</span><span class="delimiter">&quot;</span></span> props)
+    (dom/div <span class="predefined-constant">nil</span>
+      (<span class="keyword">cond</span>
+        starred-repositories
+        (dom/div <span class="predefined-constant">nil</span>
+          (dom/div <span class="error">#</span>js {<span class="symbol">:className</span> (<span class="symbol">:title</span> css)} <span class="string"><span class="delimiter">&quot;</span><span class="content">The last repositories you added a star to:</span><span class="delimiter">&quot;</span></span>)
+          (<span class="keyword">map</span> repository (<span class="symbol">:nodes</span> starred-repositories)))
+
+        (df/loading? marker)
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">Loading...</span><span class="delimiter">&quot;</span></span>
+
+        <span class="symbol">:else</span>
+        (dom/button <span class="error">#</span>js {<span class="symbol">:onClick</span>
+                         #(df/load this <span class="symbol">:viewer</span> LastestStarred {<span class="symbol">:target</span> [<span class="symbol">:ui/root</span>]
+                                                                <span class="symbol">:marker</span> <span class="symbol">::loading</span>})}
+          <span class="string"><span class="delimiter">&quot;</span><span class="content">Load latest starred repositories</span><span class="delimiter">&quot;</span></span>)))))
+
+(<span class="keyword">defn</span> <span class="function">new-client</span> [token]
+  (fulcro/new-fulcro-client
+    <span class="symbol">:networking</span>
+    {<span class="symbol">:remote</span>
+     (pfn/graphql-network
+       {<span class="symbol">::pfn/url</span> (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">https://api.github.com/graphql?access_token=</span><span class="delimiter">&quot;</span></span> token)})}))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Demo:</p>
+</div>
+<div x-app="demo-fulcro-network-github-latest-stars"></div>
 </div>
 <div class="sect3">
 <h4 id="_calling_mutations"><a class="anchor" href="#_calling_mutations"></a><a class="link" href="#_calling_mutations">5.1.2. Calling mutations</a></h4>
-
+<div x-app="demo-fulcro-network-github-stars"></div>
 </div>
 <div class="sect3">
 <h4 id="_custom_reads"><a class="anchor" href="#_custom_reads"></a><a class="link" href="#_custom_reads">5.1.3. Custom reads</a></h4>
@@ -2614,13 +2704,14 @@ type Contact @model {
 
 </div>
 <div class="sect2">
-<h3 id="edn_gql"><a class="anchor" href="#edn_gql"></a><a class="link" href="#edn_gql">5.3. EDN&#8594;GraphQL #TODO</a></h3>
+<h3 id="edn_gql"><a class="anchor" href="#edn_gql"></a><a class="link" href="#edn_gql">5.3. EDN&#8594;GraphQL</a></h3>
 <div class="paragraph">
 <p>Here you can try an interactive convertor. Type your EDN graph query on the left side
 and see the GraphQL equivalent been generated on the right.</p>
 </div>
 <div x-app="edn-graphql-converter"></div>
 <link rel="stylesheet" type="text/css" href="/assets/css/codemirror.css" />
+<link rel="stylesheet" type="text/css" href="/assets/css/book.css" />
 <script src="/assets/js/book/main.js"></script>
 </div>
 </div>
@@ -2629,7 +2720,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-06 02:00:46 -02
+Last updated 2018-02-06 23:04:04 -02
 </div>
 </div>
 </body>

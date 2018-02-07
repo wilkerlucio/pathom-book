@@ -1604,22 +1604,57 @@ Now let's build a view using that query:
 
 [source,clojure]
 ----
-include::../src/com/wsscode/pathom/book/graphql/fulcro_network/name_query.cljs[]
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_name.cljs[]
 ----
 
 <1> Require the namespace containing the fulcro network helpers
 <2> We get just the subquery related to the user data and put in this component
-<3> The viewer goes on the root query
-<4> Trigger the load for the `:viewer`
+<3> Trigger the load for the `:viewer`
+<4> The viewer goes on the root query
 <5> Setup the GraphQL network, it's a Fulcro network that does the query translation automatically
 
-You can try this example here, just get yourself a github personal token.
+You can try this example here, you need to https://github.com/settings/tokens[generate a personal token on Github],
+please add `public_repo` scope when you generate it, so you can try all the demo features.
 
 ++++
-<div x-app="demo-fulcro-network-name-query"></div>
+<div x-app="demo-fulcro-network-github-name"></div>
+<div class="space"></div>
+++++
+
+What were the last projects you Github that you gave a star to? We can ask the Github
+GraphQL with this query:
+
+[source,graphql]
+----
+{
+  viewer {
+    starredRepositories(first: 10, orderBy: {field: STARRED_AT, direction: DESC}) {
+      nodes {
+        id
+        name
+        updatedAt
+      }
+    }
+  }
+}
+----
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_latest_stars.cljs[]
+----
+
+Demo:
+
+++++
+<div x-app="demo-fulcro-network-github-latest-stars"></div>
 ++++
 
 === Calling mutations
+
+++++
+<div x-app="demo-fulcro-network-github-stars"></div>
+++++
 
 === Custom reads
 
@@ -1652,7 +1687,7 @@ type Contact @model {
 
 == Connect #TODO
 
-== EDN->GraphQL #TODO [[edn_gql]]
+== EDN->GraphQL [[edn_gql]]
 
 Here you can try an interactive convertor. Type your EDN graph query on the left side
 and see the GraphQL equivalent been generated on the right.
@@ -1663,5 +1698,6 @@ and see the GraphQL equivalent been generated on the right.
 
 ++++
 <link rel="stylesheet" type="text/css" href="/assets/css/codemirror.css" />
+<link rel="stylesheet" type="text/css" href="/assets/css/book.css" />
 <script src="/assets/js/book/main.js"></script>
 ++++
