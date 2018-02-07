@@ -19,7 +19,7 @@
   [this {:keys [github/starred-repositories] :as props} _ css]
   {:initial-state (fn [_] {})
    :ident         (fn [] [::starred "singleton"])
-   :query         (fn []
+   :query         (fn [] ; <1>
                     [{'(:github/starred-repositories {:first    10
                                                       :order-by {:field     STARRED_AT
                                                                  :direction DESC}})

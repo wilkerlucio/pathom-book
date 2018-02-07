@@ -1621,23 +1621,19 @@ please add `public_repo` scope when you generate it, so you can try all the demo
 <div class="space"></div>
 ++++
 
-What were the last projects you Github that you gave a star to? We can ask the Github
-GraphQL with this query:
+What were the last projects you Github that you gave a star to? First let's see what
+the query for it looks like:
 
-[source,graphql]
-----
-{
-  viewer {
-    starredRepositories(first: 10, orderBy: {field: STARRED_AT, direction: DESC}) {
-      nodes {
-        id
-        name
-        updatedAt
-      }
-    }
-  }
-}
-----
+++++
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{:viewer
+  [{(:starred-repositories {:first    10
+                            :order-by {:field     STARRED_AT
+                                       :direction DESC}})
+    [{:nodes
+      [:id :name :updated-at]}]}]}]
+</div>
+++++
 
 [source,clojure]
 ----
@@ -1655,14 +1651,19 @@ Demo:
 At some point, we might wanna change things, so it's time for mutations! To demonstrate
 how to use mutations, we will write an app that can add star to some projects on Github.
 
+This time let's try the app first:
+
+++++
+<div x-app="demo-fulcro-network-github-stars"></div>
+<div class="space"></div>
+++++
+
+And now to the source:
+
 [source,clojure]
 ----
 include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_mutation_stars.cljs[]
 ----
-
-++++
-<div x-app="demo-fulcro-network-github-stars"></div>
-++++
 
 === Custom reads
 

@@ -30,7 +30,8 @@
 
 (defn update-apps []
   (doseq [[id {::keys [root node]}] @apps]
-    (swap! apps update-in [id ::app] fulcro/mount root node)))
+    (swap! apps update-in [id ::app] fulcro/mount root node)
+    (.. node -classList (remove "loader"))))
 
 (defn mount-app [name node]
   (if-let [app-factory (get @app-types name)]

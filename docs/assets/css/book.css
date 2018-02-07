@@ -26,3 +26,7 @@
   background-color: #e6e6e6;
   border: 1px solid #adadad;
 }
+
+div[x-app].loader {
+  opacity: 0;
+}

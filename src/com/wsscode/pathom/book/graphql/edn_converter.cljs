@@ -4,9 +4,11 @@
     [com.wsscode.pathom.book.app-types :as app-types]
     [com.wsscode.pathom.book.ui.codemirror :as codemirror]
     [com.wsscode.pathom.graphql :as gql]
+    [fulcro.client :as fulcro]
     [fulcro.client.dom :as dom]
     [fulcro.client.mutations :as mutations]
     [fulcro.client.primitives :as fp]
+    [goog.object :as gobj]
     [goog.string :as gstr]))
 
 (defn js-name [s]
@@ -107,3 +109,10 @@
 (app-types/register-app "edn-graphql-converter"
   (fn [_]
     {::app-types/root (app-types/make-root QueryTranslatorWithDemos "graph-converter")}))
+
+(app-types/register-app "inline-edn-graphql-converter"
+  (fn [{::app-types/keys [node]}]
+    (let [content (gobj/get node "innerText")
+          Root (app-types/make-root GraphQlQueryTranslator "graph-converter")]
+      {::app-types/app  (fulcro/new-fulcro-client :initial-state (fp/get-initial-state Root {:ui/om-next-query (pretty-print-string (read-string content))}))
+       ::app-types/root Root})))
