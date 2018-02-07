@@ -33,7 +33,7 @@
 (def contacts-app (fp/factory ContactsApp))
 
 (app-types/register-app "contacts"
-  (fn []
+  (fn [_]
     {::app-types/app  (fulcro/new-fulcro-client
                         :started-callback (fn [{:keys [reconciler]}]
                                             (fetch/load reconciler :app/viewer GithubViewer {:target [::contacts "singleton" ::viewer]}))

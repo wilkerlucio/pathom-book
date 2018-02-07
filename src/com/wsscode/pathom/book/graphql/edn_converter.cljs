@@ -105,5 +105,5 @@
     (graphql-query-translator translator)))
 
 (app-types/register-app "edn-graphql-converter"
-  (fn []
+  (fn [_]
     {::app-types/root (app-types/make-root QueryTranslatorWithDemos "graph-converter")}))

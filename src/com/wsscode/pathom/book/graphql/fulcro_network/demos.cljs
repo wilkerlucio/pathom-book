@@ -41,7 +41,7 @@
 (defn register-demo [{::keys [name make-app root]}]
   (css/upsert-css name root)
   (app-types/register-app name
-    (fn []
+    (fn [_]
       {::app-types/app  (fulcro/new-fulcro-client :shared {::make-app make-app
                                                            ::app      (atom nil)
                                                            ::root     (app-types/make-root root name)})

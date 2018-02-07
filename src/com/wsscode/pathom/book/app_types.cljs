@@ -35,7 +35,7 @@
 (defn mount-app [name node]
   (if-let [app-factory (get @app-types name)]
     (let [id  (random-uuid)
-          {::keys [root app]} (app-factory)
+          {::keys [root app]} (app-factory {::node node})
           app (or app (fulcro/new-fulcro-client))]
       (css/upsert-css id root)
       (swap! apps assoc id {::app app ::root root ::node node}))
