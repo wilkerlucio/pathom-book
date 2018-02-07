@@ -24,7 +24,7 @@
    :css           [[:div [:.button {:display     "flex"
                                     :align-items "center"
                                     :margin      "14px 0"}]]
-                   [:.heart {:text-shadow   "0 0 0 #2f2f2f"
+                   [:.heart {:text-shadow   "0 0 0 #adadad"
                              :color         "transparent"
                              :transition    "text-shadow 300ms"
                              :font-size     "28px"
