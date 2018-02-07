@@ -1,9 +1,9 @@
 (ns com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars
-  (:require [fulcro.client.dom :as dom]
-            [fulcro.client.primitives :as fp]
+  (:require [com.wsscode.pathom.fulcro.network :as pfn]
             [fulcro.client :as fulcro]
-            [com.wsscode.pathom.fulcro.network :as pfn]
-            [fulcro.client.data-fetch :as df]))
+            [fulcro.client.data-fetch :as df]
+            [fulcro.client.dom :as dom]
+            [fulcro.client.primitives :as fp]))
 
 (fp/defsc Repository
   [this {:github.repository/keys [name-with-owner]}]

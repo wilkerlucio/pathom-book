@@ -1,10 +1,10 @@
 (ns com.wsscode.pathom.book.graphql.fulcro-network.github-mutation-stars
-  (:require [com.wsscode.pathom.fulcro.network :as pfn]
+  (:require [clojure.string :as str]
+            [com.wsscode.pathom.fulcro.network :as pfn]
             [fulcro.client :as fulcro]
             [fulcro.client.dom :as dom]
-            [fulcro.client.primitives :as fp]
-            [clojure.string :as str]
-            [fulcro.client.mutations :as mutations]))
+            [fulcro.client.mutations :as mutations]
+            [fulcro.client.primitives :as fp]))
 
 (mutations/defmutation add-star [_]
   (action [{:keys [state ref]}]

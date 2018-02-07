@@ -1,12 +1,12 @@
 (ns com.wsscode.pathom.book.graphql.edn-converter
   (:require
+    [cljs.reader :refer [read-string]]
     [com.wsscode.pathom.book.app-types :as app-types]
     [com.wsscode.pathom.book.ui.codemirror :as codemirror]
     [com.wsscode.pathom.graphql :as gql]
-    [cljs.reader :refer [read-string]]
-    [fulcro.client.primitives :as fp]
     [fulcro.client.dom :as dom]
     [fulcro.client.mutations :as mutations]
+    [fulcro.client.primitives :as fp]
     [goog.string :as gstr]))
 
 (defn js-name [s]
