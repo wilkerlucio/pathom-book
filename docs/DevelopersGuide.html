@@ -523,7 +523,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Wilker Lucio</span><br>
 <span id="revnumber">version 1.0,</span>
-<span id="revdate">Jan 26, 2018</span>
+<span id="revdate">Jan 31, 2018</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -570,17 +570,18 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#dispatch-helpers">3.4. Dispatch helpers</a></li>
-<li><a href="#_request_caching">3.5. Request caching</a></li>
-<li><a href="#_plugins">3.6. Plugins</a>
+<li><a href="#_mutations">3.5. Mutations</a></li>
+<li><a href="#_request_caching">3.6. Request caching</a></li>
+<li><a href="#_plugins">3.7. Plugins</a>
 <ul class="sectlevel3">
-<li><a href="#_shard_switch">3.6.1. Shard switch</a></li>
+<li><a href="#_shard_switch">3.7.1. Shard switch</a></li>
 </ul>
 </li>
-<li><a href="#_testing_todo">3.7. Testing #TODO</a></li>
-<li><a href="#_placeholders">3.8. Placeholders</a></li>
-<li><a href="#_profiling">3.9. Profiling</a></li>
-<li><a href="#_path_tracking">3.10. Path tracking</a></li>
-<li><a href="#_async_parsing_todo">3.11. Async parsing #TODO</a></li>
+<li><a href="#_testing_todo">3.8. Testing #TODO</a></li>
+<li><a href="#_placeholders">3.9. Placeholders</a></li>
+<li><a href="#_profiling">3.10. Profiling</a></li>
+<li><a href="#_path_tracking">3.11. Path tracking</a></li>
+<li><a href="#_async_parsing_todo">3.12. Async parsing #TODO</a></li>
 </ul>
 </li>
 <li><a href="#_pathom_connect">4. Pathom Connect</a>
@@ -1711,7 +1712,36 @@ error on the client-side.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_request_caching"><a class="anchor" href="#_request_caching"></a><a class="link" href="#_request_caching">3.5. Request caching</a></h3>
+<h3 id="_mutations"><a class="anchor" href="#_mutations"></a><a class="link" href="#_mutations">3.5. Mutations</a></h3>
+<div class="paragraph">
+<p>To handle mutations, you can send the <code>:mutate</code> param to the parser.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.mutation</span>
+  (<span class="symbol">:require</span> [com.wsscode.pathom.core <span class="symbol">:as</span> p]
+            [fulcro.client.primitives <span class="symbol">:as</span> fp]))
+
+(<span class="keyword">defmulti</span> <span class="function">my-mutate</span> fp/dispatch)
+
+(<span class="keyword">defmethod</span> <span class="function">my-mutate</span> `do-operation [{<span class="symbol">:keys</span> [state]} _ params]
+  (<span class="keyword">swap!</span> state update <span class="symbol">:history</span> <span class="keyword">conj</span> {<span class="symbol">:op</span> <span class="symbol">:operation</span> <span class="symbol">:params</span> params}))
+
+(<span class="keyword">def</span> <span class="function">parser</span> (p/parser {<span class="symbol">:mutate</span> my-mutate}))
+
+(<span class="keyword">comment</span>
+  (<span class="keyword">let</span> [state (<span class="keyword">atom</span> {<span class="symbol">:history</span> []})]
+    (parser {<span class="symbol">:state</span> state} [`(do-operation {<span class="symbol">:foo</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">bar</span><span class="delimiter">&quot;</span></span>})
+                            `(do-operation {<span class="symbol">:buz</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">baz</span><span class="delimiter">&quot;</span></span>})])
+    @state)
+  <span class="comment">; =&gt; {:history [{:op :operation, :params {:foo &quot;bar&quot;}}</span>
+  <span class="comment">;               {:op :operation, :params {:buz &quot;baz&quot;}}]}</span>
+  )</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_request_caching"><a class="anchor" href="#_request_caching"></a><a class="link" href="#_request_caching">3.6. Request caching</a></h3>
 <div class="paragraph">
 <p>As your queries grow, there are more and more optimizations that you can do avoid unnecessary IO or heavy computations. Here we are going to talk about a <code>request cache</code>, which is a fancy name for an atom that is initialized on every query and stays on the environment so you can share the cache across nodes. Let&#8217;s see how we can use that to speed up our query processing:</p>
 </div>
@@ -1767,7 +1797,7 @@ error on the client-side.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_plugins"><a class="anchor" href="#_plugins"></a><a class="link" href="#_plugins">3.6. Plugins</a></h3>
+<h3 id="_plugins"><a class="anchor" href="#_plugins"></a><a class="link" href="#_plugins">3.7. Plugins</a></h3>
 <div class="paragraph">
 <p>Since <code>1.0.0-beta-8</code>, pathom included a plugin support. Plugins set code that wraps some of pathom operations, a plugin is a map where you bind keys from event names to functions. They work on <code>wrap</code> fashion, kind like <code>ring</code> wrappers. Here is what a plugin looks like:</p>
 </div>
@@ -1814,7 +1844,7 @@ error on the client-side.</p>
 <p>The plugin engine replaces the old <code>process-reader</code> in a much more powerful way. If you want to check a real example look for the source for the built-in plugins, they are quite small and yet powerful tools (grep for <code>-plugin</code> on the repository to find all of them).</p>
 </div>
 <div class="sect3">
-<h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">3.6.1. Shard switch</a></h4>
+<h4 id="_shard_switch"><a class="anchor" href="#_shard_switch"></a><a class="link" href="#_shard_switch">3.7.1. Shard switch</a></h4>
 <div class="paragraph">
 <p>For a more practical example, let&#8217;s say we are routing in a micro-service architecture
 and our parser needs to be shard-aware. Let&#8217;s write a plugin that anytime it sees a <code>:shard</code>
@@ -1873,11 +1903,11 @@ it down, providing that shard information for any node downstream.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_todo"><a class="anchor" href="#_testing_todo"></a><a class="link" href="#_testing_todo">3.7. Testing #TODO</a></h3>
+<h3 id="_testing_todo"><a class="anchor" href="#_testing_todo"></a><a class="link" href="#_testing_todo">3.8. Testing #TODO</a></h3>
 
 </div>
 <div class="sect2">
-<h3 id="_placeholders"><a class="anchor" href="#_placeholders"></a><a class="link" href="#_placeholders">3.8. Placeholders</a></h3>
+<h3 id="_placeholders"><a class="anchor" href="#_placeholders"></a><a class="link" href="#_placeholders">3.9. Placeholders</a></h3>
 <div class="paragraph">
 <p>There is one issue that some people stumbled upon while using Om.next; the problem happens when you need to display two or more different views of the same item as siblings (regarding query arrangement, not necessarily DOM siblings), how do you make this query?</p>
 </div>
@@ -1954,7 +1984,7 @@ it down, providing that shard information for any node downstream.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_profiling"><a class="anchor" href="#_profiling"></a><a class="link" href="#_profiling">3.9. Profiling</a></h3>
+<h3 id="_profiling"><a class="anchor" href="#_profiling"></a><a class="link" href="#_profiling">3.10. Profiling</a></h3>
 <div class="paragraph">
 <p>It&#8217;s good to know how your queries are performing, and breaking it down by nodes is an excellent level to reason about how your queries are doing. Pathom provides a plugin to make this measurement easy to do:</p>
 </div>
@@ -2043,7 +2073,7 @@ it down, providing that shard information for any node downstream.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_path_tracking"><a class="anchor" href="#_path_tracking"></a><a class="link" href="#_path_tracking">3.10. Path tracking</a></h3>
+<h3 id="_path_tracking"><a class="anchor" href="#_path_tracking"></a><a class="link" href="#_path_tracking">3.11. Path tracking</a></h3>
 <div class="paragraph">
 <p>As you go deep in your parser <code>pathom</code> track record of the current path taken, it&#8217;s available at <code>::p/path</code> at any time. It&#8217;s a vector containing the current path from the root, the current main use for it is regarding error reporting and profiling.</p>
 </div>
@@ -2073,7 +2103,7 @@ it down, providing that shard information for any node downstream.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_async_parsing_todo"><a class="anchor" href="#_async_parsing_todo"></a><a class="link" href="#_async_parsing_todo">3.11. Async parsing #TODO</a></h3>
+<h3 id="_async_parsing_todo"><a class="anchor" href="#_async_parsing_todo"></a><a class="link" href="#_async_parsing_todo">3.12. Async parsing #TODO</a></h3>
 
 </div>
 </div>
@@ -2464,7 +2494,7 @@ custom way.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-01-31 18:43:36 -02
+Last updated 2018-02-12 11:48:58 -02
 </div>
 </div>
 </body>

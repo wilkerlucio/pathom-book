@@ -933,6 +933,33 @@ Using multi-methods is a good way to make open readers, `pathom` provides helper
 ;                                             #:neighbor{:name "Casa Amarela"}]}}
 ```
 
+== Mutations
+
+To handle mutations, you can send the `:mutate` param to the parser.
+
+[source,clojure]
+----
+(ns com.wsscode.pathom.book.mutation
+  (:require [com.wsscode.pathom.core :as p]
+            [fulcro.client.primitives :as fp]))
+
+(defmulti my-mutate fp/dispatch)
+
+(defmethod my-mutate `do-operation [{:keys [state]} _ params]
+  (swap! state update :history conj {:op :operation :params params}))
+
+(def parser (p/parser {:mutate my-mutate}))
+
+(comment
+  (let [state (atom {:history []})]
+    (parser {:state state} [`(do-operation {:foo "bar"})
+                            `(do-operation {:buz "baz"})])
+    @state)
+  ; => {:history [{:op :operation, :params {:foo "bar"}}
+  ;               {:op :operation, :params {:buz "baz"}}]}
+  )
+----
+
 == Request caching
 
 As your queries grow, there are more and more optimizations that you can do avoid unnecessary IO or heavy computations. Here we are going to talk about a `request cache`, which is a fancy name for an atom that is initialized on every query and stays on the environment so you can share the cache across nodes. Let's see how we can use that to speed up our query processing:
