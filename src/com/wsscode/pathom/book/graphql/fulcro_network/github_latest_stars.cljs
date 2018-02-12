@@ -1,17 +1,19 @@
 (ns com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars
   (:require [com.wsscode.pathom.book.ui.util :as ui]
             [com.wsscode.pathom.fulcro.network :as pfn]
+            [com.wsscode.pathom.core :as p]
             [fulcro.client :as fulcro]
             [fulcro.client.data-fetch :as df]
             [fulcro.client.dom :as dom]
             [fulcro.client.primitives :as fp]))
 
 (fp/defsc Repository
-  [this {:github.repository/keys [name-with-owner]}]
+  [this {:github.repository/keys [name-with-owner]} _ css]
   {:ident [:github.repository/id :github.repository/id]
    :query [:github.repository/id
-           :github.repository/name-with-owner]}
-  (dom/div nil
+           :github.repository/name-with-owner]
+   :css   [[:.container {:margin "4px 0"}]]}
+  (dom/div #js {:className (:container css)}
     (str name-with-owner)))
 
 (def repository (fp/factory Repository {:keyfn :github.repository/id}))
@@ -28,7 +30,8 @@
                      [df/marker-table ::loading]])
    :css           [[:.title {:margin-bottom "8px"
                              :font-weight   "bold"}]
-                   [:.button {:margin-top "10px"}]]}
+                   [:.button {:margin-top "10px"}]]
+   :css-include   [Repository]}
   (let [loading? (ui/loading? this ::loading)]
     (dom/div nil
       (cond
@@ -36,11 +39,10 @@
         (dom/div nil
           (dom/div #js {:className (:title css)} "The last repositories you added a star to:")
           (map repository (:nodes starred-repositories))
-          (dom/button #js {:onClick
-                           #(df/load this :viewer LastestStarred {:target [:ui/root]
-                                                                  :marker ::loading})
+          (dom/button #js {:onClick   #(df/load this :viewer LastestStarred {:target [:ui/root]
+                                                                             :marker ::loading})
                            :className (:button css)
-                           :disabled loading?}
+                           :disabled  loading?}
             (if loading? "Loading..." "Reload")))
 
         loading?

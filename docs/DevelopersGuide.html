@@ -2597,24 +2597,26 @@ the query for it looks like:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars</span>
-  (<span class="symbol">:require</span> [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
+  (<span class="symbol">:require</span> [com.wsscode.pathom.book.ui.util <span class="symbol">:as</span> ui]
+            [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
             [fulcro.client <span class="symbol">:as</span> fulcro]
             [fulcro.client.data-fetch <span class="symbol">:as</span> df]
             [fulcro.client.dom <span class="symbol">:as</span> dom]
             [fulcro.client.primitives <span class="symbol">:as</span> fp]))
 
 (fp/defsc Repository
-  [this {<span class="symbol">:github.repository/keys</span> [name-with-owner]}]
+  [this {<span class="symbol">:github.repository/keys</span> [name-with-owner]} _ css]
   {<span class="symbol">:ident</span> [<span class="symbol">:github.repository/id</span> <span class="symbol">:github.repository/id</span>]
    <span class="symbol">:query</span> [<span class="symbol">:github.repository/id</span>
-           <span class="symbol">:github.repository/name-with-owner</span>]}
-  (dom/div <span class="predefined-constant">nil</span>
+           <span class="symbol">:github.repository/name-with-owner</span>]
+   <span class="symbol">:css</span>   [[<span class="symbol">:.</span>container {<span class="symbol">:margin</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">4px 0</span><span class="delimiter">&quot;</span></span>}]]}
+  (dom/div <span class="error">#</span>js {<span class="symbol">:className</span> (<span class="symbol">:container</span> css)}
     (<span class="keyword">str</span> name-with-owner)))
 
 (<span class="keyword">def</span> <span class="function">repository</span> (fp/factory Repository {<span class="symbol">:keyfn</span> <span class="symbol">:github.repository/id</span>}))
 
 (fp/defsc LastestStarred
-  [this {<span class="symbol">:keys</span> [github/starred-repositories] <span class="symbol">:as</span> props} _ css]
+  [this {<span class="symbol">:keys</span> [github/starred-repositories]} _ css]
   {<span class="symbol">:initial-state</span> (<span class="keyword">fn</span> [_] {})
    <span class="symbol">:ident</span>         (<span class="keyword">fn</span> [] [<span class="symbol">::starred</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">singleton</span><span class="delimiter">&quot;</span></span>])
    <span class="symbol">:query</span>         (<span class="keyword">fn</span> [] <span class="comment">; </span><b class="conum">(1)</b>
@@ -2624,16 +2626,23 @@ the query for it looks like:</p>
                       [{<span class="symbol">:nodes</span> (fp/get-query Repository)}]}
                      [df/marker-table <span class="symbol">::loading</span>]])
    <span class="symbol">:css</span>           [[<span class="symbol">:.</span>title {<span class="symbol">:margin-bottom</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">8px</span><span class="delimiter">&quot;</span></span>
-                             <span class="symbol">:font-weight</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span>}]]}
-  (<span class="keyword">let</span> [marker (<span class="keyword">get</span> props [df/marker-table <span class="symbol">::loading</span>])]
+                             <span class="symbol">:font-weight</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span>}]
+                   [<span class="symbol">:.</span>button {<span class="symbol">:margin-top</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">10px</span><span class="delimiter">&quot;</span></span>}]]
+   <span class="symbol">:css-include</span>   [Repository]}
+  (<span class="keyword">let</span> [loading? (ui/loading? this <span class="symbol">::loading</span>)]
     (dom/div <span class="predefined-constant">nil</span>
       (<span class="keyword">cond</span>
         starred-repositories
         (dom/div <span class="predefined-constant">nil</span>
           (dom/div <span class="error">#</span>js {<span class="symbol">:className</span> (<span class="symbol">:title</span> css)} <span class="string"><span class="delimiter">&quot;</span><span class="content">The last repositories you added a star to:</span><span class="delimiter">&quot;</span></span>)
-          (<span class="keyword">map</span> repository (<span class="symbol">:nodes</span> starred-repositories)))
+          (<span class="keyword">map</span> repository (<span class="symbol">:nodes</span> starred-repositories))
+          (dom/button <span class="error">#</span>js {<span class="symbol">:onClick</span>   #(df/load this <span class="symbol">:viewer</span> LastestStarred {<span class="symbol">:target</span> [<span class="symbol">:ui/root</span>]
+                                                                             <span class="symbol">:marker</span> <span class="symbol">::loading</span>})
+                           <span class="symbol">:className</span> (<span class="symbol">:button</span> css)
+                           <span class="symbol">:disabled</span>  loading?}
+            (<span class="keyword">if</span> loading? <span class="string"><span class="delimiter">&quot;</span><span class="content">Loading...</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Reload</span><span class="delimiter">&quot;</span></span>)))
 
-        (df/loading? marker)
+        loading?
         <span class="string"><span class="delimiter">&quot;</span><span class="content">Loading...</span><span class="delimiter">&quot;</span></span>
 
         <span class="symbol">:else</span>
@@ -2697,7 +2706,7 @@ how to use mutations, we will write an app that can add star to some projects on
    <span class="symbol">:css</span>           [[<span class="symbol">:div</span> [<span class="symbol">:.</span>button {<span class="symbol">:display</span>     <span class="string"><span class="delimiter">&quot;</span><span class="content">flex</span><span class="delimiter">&quot;</span></span>
                                     <span class="symbol">:align-items</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">center</span><span class="delimiter">&quot;</span></span>
                                     <span class="symbol">:margin</span>      <span class="string"><span class="delimiter">&quot;</span><span class="content">14px 0</span><span class="delimiter">&quot;</span></span>}]]
-                   [<span class="symbol">:.</span>heart {<span class="symbol">:text-shadow</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">0 0 0 #2f2f2f</span><span class="delimiter">&quot;</span></span>
+                   [<span class="symbol">:.</span>heart {<span class="symbol">:text-shadow</span>   <span class="string"><span class="delimiter">&quot;</span><span class="content">0 0 0 #adadad</span><span class="delimiter">&quot;</span></span>
                              <span class="symbol">:color</span>         <span class="string"><span class="delimiter">&quot;</span><span class="content">transparent</span><span class="delimiter">&quot;</span></span>
                              <span class="symbol">:transition</span>    <span class="string"><span class="delimiter">&quot;</span><span class="content">text-shadow 300ms</span><span class="delimiter">&quot;</span></span>
                              <span class="symbol">:font-size</span>     <span class="string"><span class="delimiter">&quot;</span><span class="content">28px</span><span class="delimiter">&quot;</span></span>
@@ -2806,7 +2815,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-07 10:13:09 -02
+Last updated 2018-02-07 22:38:13 -02
 </div>
 </div>
 </body>
