@@ -1290,6 +1290,18 @@ As you go deep in your parser `pathom` track record of the current path taken, i
 
 = Pathom Connect
 
+In the previous sections we saw a way to implement parsers that are mostly driven by taking
+an attribute and responding to it. But this implemention is opaque, you have no way to
+introspect that system in a significant way. What `Connect` provides is a higher level
+abstraction, by adding some constraints it's handles the processing in a more automatic
+way, based on an index that can be used for introspection later, enabling features like:
+
+. Auto-complete features for data exploration (see OgE)
+. Graph generation from the index connections information
+. Multiple entry points to an attribute, automatically resolved via check current available data
+
+So let's start to write some code too see how that works.
+
 == Using Connect
 
 In `Connect` you implement the graph by creating `resolvers`, those resolvers are functions that expose some data on the graph. In this tutorial, we are going to learn more about how to create resolvers by implementing a music store graph API.

@@ -2111,6 +2111,29 @@ it down, providing that shard information for any node downstream.</p>
 <div class="sect1">
 <h2 id="_pathom_connect"><a class="anchor" href="#_pathom_connect"></a><a class="link" href="#_pathom_connect">4. Pathom Connect</a></h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>In the previous sections we saw a way to implement parsers that are mostly driven by taking
+an attribute and responding to it. But this implemention is opaque, you have no way to
+introspect that system in a significant way. What <code>Connect</code> provides is a higher level
+abstraction, by adding some constraints it&#8217;s handles the processing in a more automatic
+way, based on an index that can be used for introspection later, enabling features like:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Auto-complete features for data exploration (see OgE)</p>
+</li>
+<li>
+<p>Graph generation from the index connections information</p>
+</li>
+<li>
+<p>Multiple entry points to an attribute, automatically resolved via check current available data</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>So let&#8217;s start to write some code too see how that works.</p>
+</div>
 <div class="sect2">
 <h3 id="_using_connect"><a class="anchor" href="#_using_connect"></a><a class="link" href="#_using_connect">4.1. Using Connect</a></h3>
 <div class="paragraph">
@@ -2494,7 +2517,7 @@ custom way.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-12 11:48:58 -02
+Last updated 2018-02-14 20:49:44 -02
 </div>
 </div>
 </body>
