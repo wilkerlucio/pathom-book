@@ -1,7 +1,9 @@
 (ns com.wsscode.pathom.book.app-types
   (:require [fulcro.client.primitives :as fp]
             [fulcro.client :as fulcro]
-            [fulcro-css.css :as css]))
+            [fulcro-css.css :as css]
+            [com.wsscode.pathom.core :as p]
+            [com.wsscode.pathom.map-db :as map-db]))
 
 (defn make-root [Root app-id]
   (fp/ui
@@ -37,7 +39,10 @@
   (if-let [app-factory (get @app-types name)]
     (let [id  (random-uuid)
           {::keys [root app]} (app-factory {::node node})
-          app (or app (fulcro/new-fulcro-client))]
+          app (or app (fulcro/new-fulcro-client
+                        :parser
+                        (p/parser (-> map-db/parser-config
+                                      (assoc :mutate fulcro/mutate)))))]
       (css/upsert-css id root)
       (swap! apps assoc id {::app app ::root root ::node node}))
     (js/console.warn "App type" name "is not registered")))

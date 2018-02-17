@@ -23,7 +23,7 @@
                    :github.repository/viewer-has-starred]
    :css           [[:div [:.button {:display     "flex"
                                     :align-items "center"
-                                    :margin      "14px 0"}]]
+                                    :margin      "0 0 14px"}]]
                    [:.heart {:text-shadow   "0 0 0 #adadad"
                              :color         "transparent"
                              :transition    "text-shadow 300ms"
@@ -46,20 +46,24 @@
 
 (def star-repo (fp/factory StarRepo {:keyfn :github.repository/name-with-owner}))
 
-(fp/defsc GithubStars [_ {::keys [repos]}]
+(fp/defsc GithubStars [_ {::keys [repos]} _ css]
   {:initial-state (fn [_]
                     {::repos [#:github.repository{:name-with-owner "wilkerlucio/pathom"}
                               #:github.repository{:name-with-owner "fulcrologic/fulcro"}
-                              #:github.repository{:name-with-owner "fulcrologic/fulcro-css"}
                               #:github.repository{:name-with-owner "fulcrologic/fulcro-inspect"}
-                              #:github.repository{:name-with-owner "fulcrologic/fulcro-spec"}]})
+                              #:github.repository{:name-with-owner "fulcrologic/fulcro-css"}
+                              #:github.repository{:name-with-owner "fulcrologic/fulcro-spec"}
+                              #:github.repository{:name-with-owner "thheller/shadow-cljs"}]})
    :ident         (fn [] [::github-stars "singleton"])
    :query         [{::repos (fp/get-query StarRepo)}]
+   :css           [[:.container {:columns 2
+                                 :margin-top "18px"}]]
    :css-include   [StarRepo]}
   (dom/div nil
     "Use the buttons bellow to send love to our favorite UI kit tools!"
-    (if (-> repos first :github.repository/id)
-      (map star-repo repos))))
+    (dom/div #js {:className (:container css)}
+      (if (-> repos first :github.repository/id)
+        (map star-repo repos)))))
 
 (defn new-client [token]
   (fulcro/new-fulcro-client
@@ -69,9 +73,10 @@
         [(list 'fulcro/load
            {:query   [{[:github.repository/owner-and-name ["wilkerlucio" "pathom"]] (fp/get-query StarRepo)}
                       {[:github.repository/owner-and-name ["fulcrologic" "fulcro"]] (fp/get-query StarRepo)}
-                      {[:github.repository/owner-and-name ["fulcrologic" "fulcro-css"]] (fp/get-query StarRepo)}
                       {[:github.repository/owner-and-name ["fulcrologic" "fulcro-inspect"]] (fp/get-query StarRepo)}
-                      {[:github.repository/owner-and-name ["fulcrologic" "fulcro-spec"]] (fp/get-query StarRepo)}]
+                      {[:github.repository/owner-and-name ["fulcrologic" "fulcro-css"]] (fp/get-query StarRepo)}
+                      {[:github.repository/owner-and-name ["fulcrologic" "fulcro-spec"]] (fp/get-query StarRepo)}
+                      {[:github.repository/owner-and-name ["thheller" "shadow-cljs"]] (fp/get-query StarRepo)}]
             :refresh [::repos]})]))
 
     :networking
