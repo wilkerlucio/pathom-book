@@ -1622,7 +1622,7 @@ please add `public_repo` scope when you generate it, so you can try all the foll
 ++++
 
 What were the last projects you Github that you gave a star to? First let's see what
-the query for it looks like (the EDN is editable):
+the query for it looks like (the EDN is editable, https://shaunlebron.github.io/parinfer/[parinfer activated]):
 
 ++++
 <div x-app="inline-edn-graphql-converter" class="loader">
