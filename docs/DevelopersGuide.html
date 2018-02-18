@@ -2584,7 +2584,7 @@ please add <code>public_repo</code> scope when you generate it, so you can try a
 <div class="space"></div>
 <div class="paragraph">
 <p>What were the last projects you Github that you gave a star to? First let&#8217;s see what
-the query for it looks like:</p>
+the query for it looks like (the EDN is editable):</p>
 </div>
 <div x-app="inline-edn-graphql-converter" class="loader">
 [{:viewer
@@ -2593,6 +2593,11 @@ the query for it looks like:</p>
                                        :direction DESC}})
     [{:nodes
       [:id :name :updated-at]}]}]}]
+</div>
+<div class="paragraph">
+<p>With the query on hand we can start a new view for it. Note on this demo we are starting
+to use namespaced keywords on our properties. The namespaces are simply remove when
+the GraphQL is generated, but they are restored once the result is parsed back.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2692,9 +2697,7 @@ how to use mutations, we will write an app that can add star to some projects on
             [fulcro.client <span class="symbol">:as</span> fulcro]
             [fulcro.client.dom <span class="symbol">:as</span> dom]
             [fulcro.client.mutations <span class="symbol">:as</span> mutations]
-            [fulcro.client.primitives <span class="symbol">:as</span> fp]
-            [com.wsscode.pathom.core <span class="symbol">:as</span> p]
-            [com.wsscode.pathom.map-db <span class="symbol">:as</span> map-db]))
+            [fulcro.client.primitives <span class="symbol">:as</span> fp]))
 
 (mutations/defmutation add-star [_]
   (action [{<span class="symbol">:keys</span> [state <span class="keyword">ref</span>]}]
@@ -2828,7 +2831,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-17 19:34:50 -02
+Last updated 2018-02-18 00:58:27 -03
 </div>
 </div>
 </body>

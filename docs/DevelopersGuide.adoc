@@ -1622,7 +1622,7 @@ please add `public_repo` scope when you generate it, so you can try all the demo
 ++++
 
 What were the last projects you Github that you gave a star to? First let's see what
-the query for it looks like:
+the query for it looks like (the EDN is editable):
 
 ++++
 <div x-app="inline-edn-graphql-converter" class="loader">
@@ -1634,6 +1634,10 @@ the query for it looks like:
       [:id :name :updated-at]}]}]}]
 </div>
 ++++
+
+With the query on hand we can start a new view for it. Note on this demo we are starting
+to use namespaced keywords on our properties. The namespaces are simply remove when
+the GraphQL is generated, but they are restored once the result is parsed back.
 
 [source,clojure]
 ----
