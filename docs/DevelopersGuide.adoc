@@ -933,6 +933,33 @@ Using multi-methods is a good way to make open readers, `pathom` provides helper
 ;                                             #:neighbor{:name "Casa Amarela"}]}}
 ```
 
+== Mutations
+
+To handle mutations, you can send the `:mutate` param to the parser.
+
+[source,clojure]
+----
+(ns com.wsscode.pathom.book.mutation
+  (:require [com.wsscode.pathom.core :as p]
+            [fulcro.client.primitives :as fp]))
+
+(defmulti my-mutate fp/dispatch)
+
+(defmethod my-mutate `do-operation [{:keys [state]} _ params]
+  (swap! state update :history conj {:op :operation :params params}))
+
+(def parser (p/parser {:mutate my-mutate}))
+
+(comment
+  (let [state (atom {:history []})]
+    (parser {:state state} [`(do-operation {:foo "bar"})
+                            `(do-operation {:buz "baz"})])
+    @state)
+  ; => {:history [{:op :operation, :params {:foo "bar"}}
+  ;               {:op :operation, :params {:buz "baz"}}]}
+  )
+----
+
 == Request caching
 
 As your queries grow, there are more and more optimizations that you can do avoid unnecessary IO or heavy computations. Here we are going to talk about a `request cache`, which is a fancy name for an atom that is initialized on every query and stays on the environment so you can share the cache across nodes. Let's see how we can use that to speed up our query processing:
@@ -1262,6 +1289,21 @@ As you go deep in your parser `pathom` track record of the current path taken, i
 == Async parsing #TODO
 
 = Pathom Connect
+
+In the previous sections we saw a way to implement parsers that are mostly driven by taking
+an attribute and responding to it. But this implemention is opaque, you have no way to
+introspect that system in a significant way. What `Connect` provides is a higher level
+abstraction, by adding some constraints it's handles the processing in a more automatic
+way, based on an index that can be used for introspection later, enabling features like:
+
+. Auto-complete features for data exploration (see https://github.com/wilkerlucio/oge[OgE])
+. Graph generation from the index connections information
+. Multiple entry points to an attribute, automatically resolved via check current available data
+
+The `Connect` index is rich on information about how your attributes connect and how they
+can locate each other.
+
+So let's start to write some code too see how that works.
 
 == Using Connect
 
