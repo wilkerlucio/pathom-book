@@ -1614,7 +1614,7 @@ include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_name.cljs[
 <5> Setup the GraphQL network, it's a Fulcro network that does the query translation automatically
 
 You can try this example here, you need to https://github.com/settings/tokens[generate a personal token on Github],
-please add `public_repo` scope when you generate it, so you can try all the demo features.
+please add `public_repo` scope when you generate it, so you can try all the following demos.
 
 ++++
 <div x-app="demo-fulcro-network-github-name"></div>
@@ -1662,41 +1662,52 @@ This time let's try the app first:
 <div class="space"></div>
 ++++
 
-And now to the source:
+Before this example we only used the `viewer` entry point. But in this example we are
+not getting data related to the user directly, but instead we need specific repositories
+from the Github API. When we want to query for single entities on Pathom/Fulcro, we use
+ident queries, and the query translation is ready to deal with then:
+
+++++
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{[:github.user/login "richhickey"]
+  [:github.user/name
+   :github.user/avatar-url
+   :github.user/website-url]}]
+</div>
+++++
+
+To build the selector join from the ident, we use the last namespace segment and the
+name of the keyword. There are some cases on GraphQL where the ident requires more than
+one attribute, and repositories on Github are one example, they require a `owner` and
+a `name`. To work around this Pathom uses an `-and-` convention on the ident name, eg:
+
+++++
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{[:github.repository/owner-and-name ["wilkerlucio" "pathom"]]
+  [:github.repository/id :github.repository/name :github.repository/viewer-has-starred]}]
+</div>
+++++
+
+To handle this inside our code, we make the `ident` constructor to return this key based
+on some other attributes, in this case there is an attribute called `nameWithOwner` from
+which we can extract both name and owner, see the details on the full source:
 
 [source,clojure]
 ----
 include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_mutation_stars.cljs[]
 ----
 
-=== Custom reads
+=== Custom reads #future
 
-=== Multiple Networks
+Not available yet. The current GraphQL fails to have a good extension engine, it simply
+does the translations and throw over the network, converting it back. Future versions
+will support a more extensible engine so you can combine graphql, local reads, rest
+services and etc.
+
+=== CRUD Example #TODO
 
 In this example we are going to use a service called https://www.graph.cool/[graph.cool]
-
-[source,graphql]
-----
-type Group @model {
-  createdAt: DateTime!
-  id: ID! @isUnique
-  updatedAt: DateTime!
-  name: String
-  contacts: [Contact!]! @relation(name: "GroupOnContact")
-}
-
-type Contact @model {
-  createdAt: DateTime!
-  id: ID! @isUnique
-  updatedAt: DateTime!
-  github: String @isUnique
-  groups: [Group!]! @relation(name: "GroupOnContact")
-}
-----
-
-++++
-<div xx-app="contacts"></div>
-++++
+to create a complete CRUD using only their GraphQL API.
 
 == Connect #TODO
 

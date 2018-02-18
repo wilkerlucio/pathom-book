@@ -614,8 +614,8 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel3">
 <li><a href="#_pulling_data">5.1.1. Pulling data</a></li>
 <li><a href="#_calling_mutations">5.1.2. Calling mutations</a></li>
-<li><a href="#_custom_reads">5.1.3. Custom reads</a></li>
-<li><a href="#_multiple_networks">5.1.4. Multiple Networks</a></li>
+<li><a href="#_custom_reads_future">5.1.3. Custom reads #future</a></li>
+<li><a href="#_crud_example_todo">5.1.4. CRUD Example #TODO</a></li>
 </ul>
 </li>
 <li><a href="#_connect_todo">5.2. Connect #TODO</a></li>
@@ -2578,7 +2578,7 @@ try the following query:</p>
 </div>
 <div class="paragraph">
 <p>You can try this example here, you need to <a href="https://github.com/settings/tokens">generate a personal token on Github</a>,
-please add <code>public_repo</code> scope when you generate it, so you can try all the demo features.</p>
+please add <code>public_repo</code> scope when you generate it, so you can try all the following demos.</p>
 </div>
 <div x-app="demo-fulcro-network-github-name"></div>
 <div class="space"></div>
@@ -2614,6 +2614,8 @@ the GraphQL is generated, but they are restored once the result is parsed back.<
 (fp/defsc Repository
   [this {<span class="symbol">:github.repository/keys</span> [name-with-owner]} _ css]
   {<span class="symbol">:ident</span> [<span class="symbol">:github.repository/id</span> <span class="symbol">:github.repository/id</span>]
+   <span class="comment">; here is the item query for each repository, remember the namespaces will just be</span>
+   <span class="comment">; removed to call the graphql api</span>
    <span class="symbol">:query</span> [<span class="symbol">:github.repository/id</span>
            <span class="symbol">:github.repository/name-with-owner</span>]
    <span class="symbol">:css</span>   [[<span class="symbol">:.</span>container {<span class="symbol">:margin</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">4px 0</span><span class="delimiter">&quot;</span></span>}]]}
@@ -2626,7 +2628,8 @@ the GraphQL is generated, but they are restored once the result is parsed back.<
   [this {<span class="symbol">:keys</span> [github/starred-repositories]} _ css]
   {<span class="symbol">:initial-state</span> (<span class="keyword">fn</span> [_] {})
    <span class="symbol">:ident</span>         (<span class="keyword">fn</span> [] [<span class="symbol">::starred</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">singleton</span><span class="delimiter">&quot;</span></span>])
-   <span class="symbol">:query</span>         (<span class="keyword">fn</span> [] <span class="comment">; </span><b class="conum">(1)</b>
+   <span class="symbol">:query</span>         (<span class="keyword">fn</span> [] <span class="comment">; the container query, adding the params to fix the size</span>
+                         <span class="comment">; and order</span>
                     [{'(<span class="symbol">:github/starred-repositories</span> {<span class="symbol">:first</span>    <span class="integer">10</span>
                                                       <span class="symbol">:order-by</span> {<span class="symbol">:field</span>     STARRED_AT
                                                                  <span class="symbol">:direction</span> DESC}})
@@ -2687,7 +2690,31 @@ how to use mutations, we will write an app that can add star to some projects on
 <div x-app="demo-fulcro-network-github-stars"></div>
 <div class="space"></div>
 <div class="paragraph">
-<p>And now to the source:</p>
+<p>Before this example we only used the <code>viewer</code> entry point. But in this example we are
+not getting data related to the user directly, but instead we need specific repositories
+from the Github API. When we want to query for single entities on Pathom/Fulcro, we use
+ident queries, and the query translation is ready to deal with then:</p>
+</div>
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{[:github.user/login "richhickey"]
+  [:github.user/name
+   :github.user/avatar-url
+   :github.user/website-url]}]
+</div>
+<div class="paragraph">
+<p>To build the selector join from the ident, we use the last namespace segment and the
+name of the keyword. There are some cases on GraphQL where the ident requires more than
+one attribute, and repositories on Github are one example, they require a <code>owner</code> and
+a <code>name</code>. To work around this Pathom uses an <code>-and-</code> convention on the ident name, eg:</p>
+</div>
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{[:github.repository/owner-and-name ["wilkerlucio" "pathom"]]
+  [:github.repository/id :github.repository/name :github.repository/viewer-has-starred]}]
+</div>
+<div class="paragraph">
+<p>To handle this inside our code, we make the <code>ident</code> constructor to return this key based
+on some other attributes, in this case there is an attribute called <code>nameWithOwner</code> from
+which we can extract both name and owner, see the details on the full source:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2699,6 +2726,8 @@ how to use mutations, we will write an app that can add star to some projects on
             [fulcro.client.mutations <span class="symbol">:as</span> mutations]
             [fulcro.client.primitives <span class="symbol">:as</span> fp]))
 
+<span class="comment">; define the mutation as usual, the mutation name will be converted to camelCase and</span>
+<span class="comment">; sent to GraphQL, same for the parameters</span>
 (mutations/defmutation add-star [_]
   (action [{<span class="symbol">:keys</span> [state <span class="keyword">ref</span>]}]
     (<span class="keyword">swap!</span> state <span class="keyword">update-in</span> <span class="keyword">ref</span> <span class="keyword">assoc</span> <span class="symbol">:github.repository/viewer-has-starred</span> <span class="predefined-constant">true</span>))
@@ -2708,6 +2737,8 @@ how to use mutations, we will write an app that can add star to some projects on
   [this {<span class="symbol">:github.repository/keys</span> [id <span class="keyword">name</span> name-with-owner viewer-has-starred]} _ css]
   {<span class="symbol">:initial-state</span> {}
    <span class="symbol">:ident</span>         (<span class="keyword">fn</span> []
+                    <span class="comment">; notice we use the real data from name-with-owner to create our</span>
+                    <span class="comment">; virtual ident that correctly maps to the entry query on graphql</span>
                     (<span class="keyword">let</span> [[owner <span class="keyword">name</span>] (str/split name-with-owner <span class="regexp"><span class="delimiter">#&quot;</span><span class="content">/</span><span class="delimiter">&quot;</span></span>)]
                       [<span class="symbol">:github.repository/owner-and-name</span> [owner <span class="keyword">name</span>]]))
    <span class="symbol">:query</span>         [<span class="symbol">:github.repository/id</span>
@@ -2726,6 +2757,8 @@ how to use mutations, we will write an app that can add star to some projects on
                     [<span class="symbol">:&amp;.red</span> {<span class="symbol">:text-shadow</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">0 0 0 #f50909</span><span class="delimiter">&quot;</span></span>}]]]
    <span class="symbol">:css-include</span>   []}
   (dom/div <span class="predefined-constant">nil</span>
+                              <span class="comment">; here we call the mutation, we need to ask for some response</span>
+                              <span class="comment">; otherwise the graphql will complain</span>
     (dom/button <span class="error">#</span>js {<span class="symbol">:onClick</span>   #(fp/transact! this `[{(add-star {<span class="symbol">:input</span> {<span class="symbol">:starrable-id</span> ~id}})
                                                        [<span class="symbol">:client-mutation-id</span>]}])
                      <span class="symbol">:disabled</span>  viewer-has-starred
@@ -2741,6 +2774,8 @@ how to use mutations, we will write an app that can add star to some projects on
 
 (fp/defsc GithubStars [_ {<span class="symbol">::keys</span> [repos]} _ css]
   {<span class="symbol">:initial-state</span> (<span class="keyword">fn</span> [_]
+                    <span class="comment">; here we initialize our entities, we must use the name-with-owner</span>
+                    <span class="comment">; so the ident is properly generated</span>
                     {<span class="symbol">::repos</span> [<span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">wilkerlucio/pathom</span><span class="delimiter">&quot;</span></span>}
                               <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic/fulcro</span><span class="delimiter">&quot;</span></span>}
                               <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic/fulcro-inspect</span><span class="delimiter">&quot;</span></span>}
@@ -2749,7 +2784,7 @@ how to use mutations, we will write an app that can add star to some projects on
                               <span class="error">#</span><span class="symbol">:github.repository</span>{<span class="symbol">:name-with-owner</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">thheller/shadow-cljs</span><span class="delimiter">&quot;</span></span>}]})
    <span class="symbol">:ident</span>         (<span class="keyword">fn</span> [] [<span class="symbol">::github-stars</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">singleton</span><span class="delimiter">&quot;</span></span>])
    <span class="symbol">:query</span>         [{<span class="symbol">::repos</span> (fp/get-query StarRepo)}]
-   <span class="symbol">:css</span>           [[<span class="symbol">:.</span>container {<span class="symbol">:columns</span> <span class="integer">2</span>
+   <span class="symbol">:css</span>           [[<span class="symbol">:.</span>container {<span class="symbol">:columns</span>    <span class="integer">2</span>
                                  <span class="symbol">:margin-top</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">18px</span><span class="delimiter">&quot;</span></span>}]]
    <span class="symbol">:css-include</span>   [StarRepo]}
   (dom/div <span class="predefined-constant">nil</span>
@@ -2764,6 +2799,8 @@ how to use mutations, we will write an app that can add star to some projects on
     (<span class="keyword">fn</span> [{<span class="symbol">:keys</span> [reconciler]}]
       (fp/transact! reconciler
         [(<span class="keyword">list</span> 'fulcro/load
+           <span class="comment">; triggering the load, now use have to use the ident with vector version so</span>
+           <span class="comment">; it gets translated into the proper graphql query</span>
            {<span class="symbol">:query</span>   [{[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">wilkerlucio</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">pathom</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
                       {[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcro</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
                       {[<span class="symbol">:github.repository/owner-and-name</span> [<span class="string"><span class="delimiter">&quot;</span><span class="content">fulcrologic</span><span class="delimiter">&quot;</span></span> <span class="string"><span class="delimiter">&quot;</span><span class="content">fulcro-inspect</span><span class="delimiter">&quot;</span></span>]] (fp/get-query StarRepo)}
@@ -2774,40 +2811,27 @@ how to use mutations, we will write an app that can add star to some projects on
 
     <span class="symbol">:networking</span>
     {<span class="symbol">:remote</span>
-     (pfn/graphql-network
-       {<span class="symbol">::pfn/url</span> (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">https://api.github.com/graphql?access_token=</span><span class="delimiter">&quot;</span></span> token)})}))</code></pre>
+     (<span class="keyword">-&gt;</span> (pfn/graphql-network
+           {<span class="symbol">::pfn/url</span> (<span class="keyword">str</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">https://api.github.com/graphql?access_token=</span><span class="delimiter">&quot;</span></span> token)})
+         (pfn/batch-network))}))</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_reads"><a class="anchor" href="#_custom_reads"></a><a class="link" href="#_custom_reads">5.1.3. Custom reads</a></h4>
-
-</div>
-<div class="sect3">
-<h4 id="_multiple_networks"><a class="anchor" href="#_multiple_networks"></a><a class="link" href="#_multiple_networks">5.1.4. Multiple Networks</a></h4>
+<h4 id="_custom_reads_future"><a class="anchor" href="#_custom_reads_future"></a><a class="link" href="#_custom_reads_future">5.1.3. Custom reads #future</a></h4>
 <div class="paragraph">
-<p>In this example we are going to use a service called <a href="https://www.graph.cool/">graph.cool</a></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="graphql">type Group @model {
-  createdAt: DateTime!
-  id: ID! @isUnique
-  updatedAt: DateTime!
-  name: String
-  contacts: [Contact!]! @relation(name: &quot;GroupOnContact&quot;)
-}
-
-type Contact @model {
-  createdAt: DateTime!
-  id: ID! @isUnique
-  updatedAt: DateTime!
-  github: String @isUnique
-  groups: [Group!]! @relation(name: &quot;GroupOnContact&quot;)
-}</code></pre>
+<p>Not available yet. The current GraphQL fails to have a good extension engine, it simply
+does the translations and throw over the network, converting it back. Future versions
+will support a more extensible engine so you can combine graphql, local reads, rest
+services and etc.</p>
 </div>
 </div>
-<div xx-app="contacts"></div>
+<div class="sect3">
+<h4 id="_crud_example_todo"><a class="anchor" href="#_crud_example_todo"></a><a class="link" href="#_crud_example_todo">5.1.4. CRUD Example #TODO</a></h4>
+<div class="paragraph">
+<p>In this example we are going to use a service called <a href="https://www.graph.cool/">graph.cool</a>
+to create a complete CRUD using only their GraphQL API.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -2831,7 +2855,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-18 00:58:27 -03
+Last updated 2018-02-18 15:16:35 -03
 </div>
 </div>
 </body>

@@ -11,6 +11,8 @@
 (fp/defsc Repository
   [this {:github.repository/keys [name-with-owner]} _ css]
   {:ident [:github.repository/id :github.repository/id]
+   ; here is the item query for each repository, remember the namespaces will just be
+   ; removed to call the graphql api
    :query [:github.repository/id
            :github.repository/name-with-owner]
    :css   [[:.container {:margin "4px 0"}]]}
@@ -23,7 +25,8 @@
   [this {:keys [github/starred-repositories]} _ css]
   {:initial-state (fn [_] {})
    :ident         (fn [] [::starred "singleton"])
-   :query         (fn [] ; <1>
+   :query         (fn [] ; the container query, adding the params to fix the size
+                         ; and order
                     [{'(:github/starred-repositories {:first    10
                                                       :order-by {:field     STARRED_AT
                                                                  :direction DESC}})
