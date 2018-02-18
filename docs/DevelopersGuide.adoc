@@ -1763,7 +1763,7 @@ and see the GraphQL equivalent been generated on the right.
 ++++
 
 ++++
-<link rel="stylesheet" type="text/css" href="/assets/css/codemirror.css" />
-<link rel="stylesheet" type="text/css" href="/assets/css/book.css" />
-<script src="/assets/js/book/main.js"></script>
+<link rel="stylesheet" type="text/css" href="assets/css/codemirror.css" />
+<link rel="stylesheet" type="text/css" href="assets/css/book.css" />
+<script src="assets/js/book/main.js"></script>
 ++++
