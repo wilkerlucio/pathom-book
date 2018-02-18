@@ -1,19 +1,10 @@
-{:dependencies [[org.clojure/core.async "0.3.465"]
-                [com.wsscode/pathom "2.0.0-beta1"]
-                [spec-coerce "1.0.0-alpha5"]
-                [fulcrologic/fulcro "2.1.6"]
-                [fulcrologic/fulcro-inspect "2.0.0-alpha5"]
-                [binaryage/devtools "0.9.9"]]
-
- :nrepl        {:port 59121}
-
- :source-paths ["src"]
-
- :builds       {:book {:target     :browser
-                       :output-dir "docs/assets/js/book"
-                       :asset-path "/assets/js/book"
-                       :devtools   {:preloads   [devtools.preload]
-                                    :after-load com.wsscode.pathom.book.app-types/update-apps
-                                    :http-root  "docs"
-                                    :http-port  8082}
-                       :modules    {:main {:entries [com.wsscode.pathom.book.main]}}}}}
+{:deps   {:aliases [:dev]}
+ :nrepl  {:port 59121}
+ :builds {:book {:target     :browser
+                 :output-dir "docs/assets/js/book"
+                 :asset-path "/assets/js/book"
+                 :devtools   {:preloads   [devtools.preload]
+                              :after-load com.wsscode.pathom.book.app-types/update-apps
+                              :http-root  "docs"
+                              :http-port  8082}
+                 :modules    {:main {:entries [com.wsscode.pathom.book.main]}}}}}
