@@ -1606,4 +1606,164 @@ custom way.
 
 == Exploration with OgE #TODO
 
-== GraphQL Integration #TODO
+= GraphQL Integration
+
+Pathom provides a collection of utilities to integrate with GraphQL. In the following
+sections you gonna learn a couple of different ways to make this integration.
+
+== Fulcro Network
+
+Thanks to a feature parity with GraphQL, it is possible to use a GraphQL endpoint directly
+from the client.
+
+=== Pulling data
+
+Github provides a https://developer.github.com/v4[public GraphQL API]. Let's see how
+we can read some data strait from then. Using the https://developer.github.com/v4/explorer/[explorer],
+try the following query:
+
+[source,graphql]
+----
+query {
+  viewer {
+    id
+    name
+  }
+}
+----
+
+This should print your id and name. In EDN syntax, we can write an equivalent query:
+
+[source,clojure]
+----
+[{:viewer
+  [:id :name]}]
+----
+
+Check the <<edn_gql,EDN->GraphQL>> tool for more translation examples.
+
+Now let's build a view using that query:
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_name.cljs[]
+----
+
+<1> Require the namespace containing the fulcro network helpers
+<2> We get just the subquery related to the user data and put in this component
+<3> Trigger the load for the `:viewer`
+<4> The viewer goes on the root query
+<5> Setup the GraphQL network, it's a Fulcro network that does the query translation automatically
+
+You can try this example here, you need to https://github.com/settings/tokens[generate a personal token on Github],
+please add `public_repo` scope when you generate it, so you can try all the following demos.
+
+++++
+<div x-app="demo-fulcro-network-github-name"></div>
+<div class="space"></div>
+++++
+
+What were the last projects you Github that you gave a star to? First let's see what
+the query for it looks like (the EDN is editable, https://shaunlebron.github.io/parinfer/[parinfer activated]):
+
+++++
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{:viewer
+  [{(:starred-repositories {:first    10
+                            :order-by {:field     STARRED_AT
+                                       :direction DESC}})
+    [{:nodes
+      [:id :name :updated-at]}]}]}]
+</div>
+++++
+
+With the query on hand we can start a new view for it. Note on this demo we are starting
+to use namespaced keywords on our properties. The namespaces are simply remove when
+the GraphQL is generated, but they are restored once the result is parsed back.
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_latest_stars.cljs[]
+----
+
+Demo:
+
+++++
+<div x-app="demo-fulcro-network-github-latest-stars"></div>
+++++
+
+=== Calling mutations
+
+At some point, we might wanna change things, so it's time for mutations! To demonstrate
+how to use mutations, we will write an app that can add star to some projects on Github.
+
+This time let's try the app first:
+
+++++
+<div x-app="demo-fulcro-network-github-stars"></div>
+<div class="space"></div>
+++++
+
+Before this example we only used the `viewer` entry point. But in this example we are
+not getting data related to the user directly, but instead we need specific repositories
+from the Github API. When we want to query for single entities on Pathom/Fulcro, we use
+ident queries, and the query translation is ready to deal with then:
+
+++++
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{[:github.user/login "richhickey"]
+  [:github.user/name
+   :github.user/avatar-url
+   :github.user/website-url]}]
+</div>
+++++
+
+To build the selector join from the ident, we use the last namespace segment and the
+name of the keyword. There are some cases on GraphQL where the ident requires more than
+one attribute, and repositories on Github are one example, they require a `owner` and
+a `name`. To work around this Pathom uses an `-and-` convention on the ident name, eg:
+
+++++
+<div x-app="inline-edn-graphql-converter" class="loader">
+[{[:github.repository/owner-and-name ["wilkerlucio" "pathom"]]
+  [:github.repository/id :github.repository/name :github.repository/viewer-has-starred]}]
+</div>
+++++
+
+To handle this inside our code, we make the `ident` constructor to return this key based
+on some other attributes, in this case there is an attribute called `nameWithOwner` from
+which we can extract both name and owner, see the details on the full source:
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/graphql/fulcro_network/github_mutation_stars.cljs[]
+----
+
+=== Custom reads #future
+
+Not available yet. The current GraphQL fails to have a good extension engine, it simply
+does the translations and throw over the network, converting it back. Future versions
+will support a more extensible engine so you can combine graphql, local reads, rest
+services and etc.
+
+=== CRUD Example #TODO
+
+In this example we are going to use a service called https://www.graph.cool/[graph.cool]
+to create a complete CRUD using only their GraphQL API.
+
+== Connect #TODO
+
+== EDN->GraphQL [[edn_gql]]
+
+Here you can try an interactive convertor. Type your EDN graph query on the left side
+and see the GraphQL equivalent been generated on the right.
+
+++++
+<div x-app="edn-graphql-converter"></div>
+++++
+
+++++
+<link rel="stylesheet" type="text/css" href="/assets/css/codemirror.css" />
+<link rel="stylesheet" type="text/css" href="/assets/css/book.css" />
+<script src="/assets/js/book/main.js"></script>
+++++

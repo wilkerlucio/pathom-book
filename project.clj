@@ -6,8 +6,12 @@
 
   :source-paths ["src"]
 
-  :dependencies [[org.clojure/clojure "1.9.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.671" :scope "provided"]
-                 [org.clojure/core.async "0.3.443" :scope "provided"]
-                 [com.wsscode/pathom "2.0.0-beta1"]
-                 [fulcrologic/fulcro "2.1.2"]])
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.9.946"]
+                 [org.clojure/core.async "0.4.474"]
+                 [com.wsscode/pathom "2.0.0-beta2-SNAPSHOT"]
+                 [spec-coerce "1.0.0-alpha5"]
+                 [fulcrologic/fulcro "2.3.0-SNAPSHOT"]
+                 [fulcrologic/fulcro-inspect "2.0.0-alpha6-SNAPSHOT"]
+                 [binaryage/devtools "0.9.9"]
+                 [thheller/shadow-cljs "2.1.14"]])
