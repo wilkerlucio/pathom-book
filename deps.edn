@@ -11,12 +11,9 @@
   fulcrologic/fulcro-inspect {:mvn/version "2.0.0-alpha5"}
   binaryage/devtools         {:mvn/version "0.9.9"}
   org.clojure/test.check     {:mvn/version "0.9.0"}
-  thheller/shadow-cljs       {:mvn/version "2.1.16"}}
+  thheller/shadow-cljs       {:mvn/version "2.1.18"}}
 
  :aliases
  {:dev {:extra-paths ["/Users/wilkerlucio/Development/pathom/src"
                       "/Users/wilkerlucio/Development/third-part/fulcro-inspect/src"
-                      "/Users/wilkerlucio/Development/third-part/fulcro/src/main"]
-        :override-deps {fulcrologic/fulcro         {:local/root "/Users/wilkerlucio/Development/third-part/fulcro"}
-                        fulcrologic/fulcro-inspect {:local/root "/Users/wilkerlucio/Development/third-part/fulcro-inspect"}
-                        com.wsscode/pathom         {:local/root "/Users/wilkerlucio/Development/pathom"}}}}}
+                      "/Users/wilkerlucio/Development/third-part/fulcro/src/main"]}}}
