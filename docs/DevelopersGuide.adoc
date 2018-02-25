@@ -193,7 +193,7 @@ and now each call to the parser needs nothing in the supplied env: `(parser {} [
 
 The example below sets up a more complex scenario where we'll want to pass a database in the environment on every call (it might change over time). Placing our reader logic in the env plugin will make this a little cleaner.
 
-Here's a quick summary of things for quick reference:
+Here's a quick summary of the things we'll be using for quick reference:
 
 [Horizontal]
 `p/join`:: Satisfy a to-one join, and continue parsing.
@@ -245,6 +245,7 @@ Here's a quick summary of things for quick reference:
        (p/join character env)))
 
    ; another "globally accessible" bit of data that can be queried (independent of context)
+   ; and returns a to-many result of some pre-chosen "leaing role" characters.
    :characters/main
    (fn [env]
      ; Process to-many joins with join-seq using a sequence as the new context:
@@ -292,20 +293,34 @@ Here's a quick summary of things for quick reference:
 ;              :random #:character{:name "Saul Goodman"}}
 ----
 
-The previous example covered the most common processes you need on a graph API. The `map-reader` is responsible for reading the values on the *entity attributes*, when the value is not there the `computed` kicks in trying to compute the value if it's registered. In case no reader is able to respond, a value of `::p/not-found` will be returned.
+The `map-reader` is responsible for reading the values on the contextual *entity attributes*. When a value is not found then the next reader in the chain is asked: the `computed` reader kicks in trying to compute the value. If no reader is able to respond a value of `::p/not-found` will be returned.
 
-Now it's time to add the *entity lookups* in the game. Add this right before the `(def parser ...` code.
+== Entity Lookups
+
+Entity lookups are done by *ident* (as defined by Om Next and Fulcro). An *ident* is simply a vector whose first element is a keyword and second element is any value. The first element is thought of as the "table" or "kind" of thing, and the second as the ID of a specific one. For example `[:character/id :rick]` is an ident that "conceptually points to" the entity of type/table "character/id" with ID ":rick".
+
+You typically add support for entity lookups using a multimethod that dispatches on the first element of an ident. The predefined value `::p/continue` can be used by an entity lookup reader to indicate that it should ask the next reader to try to resolve the lookup.
+
+We'll be using one additional new function:
+
+[Horizontal]
+`p/ident-value`:: Given the env, it will return the ID portion of the ident that is being resolved (current context).
+
+The code below can be added to the prior example:
 
 [source,clojure]
 ----
-; initialize a multi-method to handle entity queries
+; databases and other prior code
+...
+
+;;;;;; Handle Entity Lookups ;;;;;;;
+
 (defmulti entity p/entity-dispatch)
 
 ; default case returns ::p/continue to sign to pathom that
 ; this reader can't handle the given entry
 (defmethod entity :default [_] ::p/continue)
 
-; let's handle the load of characters by id
 (defmethod entity :character/id [{::keys [db] :as env}]
   ; from the key [:character/id :rick], p/ident-value will return :rick
   (let [id (p/ident-value env)]
@@ -329,8 +344,8 @@ Now it's time to add the *entity lookups* in the game. Add this right before the
 ; testing our new queries
 (parser {::db (atom {:characters characters
                      :tv-shows   tv-shows})}
-        [[:character/id :arya]
-         {[:tv-show/id :rm]
+        [[:character/id :arya] ; query for the entire entity
+         {[:tv-show/id :rm] ; use the given tv show as the "context" for the join
           [:tv-show/title
            {:tv-show/characters [:character/name]}]}])
 ; =>
@@ -341,7 +356,8 @@ Now it's time to add the *entity lookups* in the game. Add this right before the
 ;                                               #:character{:name "Morty Smith"}]}}
 ----
 
-When you understand those building blocks, all you graph can be written with that. If your app is larger than a demo, instead of using a fixed map for the `computed`, you can use the `p/key-dispatch` which is like the `p/entity-dispatch` but for `dispatch-keys` (like the map keys). By doing that you can leave the nodes open for extension, and then split your definitions across multiple files. An example of that is available at <<dispatch-helpers,dispatch helpers page>>.
+These building blocks enable quite a bit of query processing. As your graph grows larger it will make sense to use some additional tools to help split your parser into different pieces. In particular `computed` can be written with a dispatch mechanism instead of being represented as a map. See the section about
+<<dispatch-helpers,dispatch helpers>> for more information.
 
 Here is the complete code for the example:
 
