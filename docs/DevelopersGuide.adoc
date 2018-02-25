@@ -77,19 +77,21 @@ a map indicates a to-many or to-one join (resolved at runtime using database con
 Queries are always "relative" to some starting context (which is typically supplied via parameters
 or by a top-level join).
 
-If you want to obtain the name and address:
+If you want to obtain the name and age of "some" person:
 
 ```
-[:person/name :person/age] ; Get properties name and address
+[:person/name :person/age]
 ```
 
-If you want to obtain a name, and the names of children:
+If you want to obtain a person's name and the street of their address you might write this:
 
 ```
 [:person/name {:person/address [:address/street]}]
 ```
 
-The result of running such a query is a map containing the result (in the same shape as the query):
+where we imagine that the underlying database has some kind of normalization that needs to be traversed in order to satisfy the address data.
+
+The result of running a query is a map containing the result (in the same recursive shape as the query):
 
 Running `[:person/name :person/age]` against the person "Sam" might give:
 
