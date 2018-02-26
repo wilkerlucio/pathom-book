@@ -448,23 +448,21 @@ Here is the complete code for the example:
 
 == Readers
 
-=== What is a reader?
-
 A reader is a function that will process a single entry from the query. For example, given the following query:
-`[:name :age]`. If you ask an `om.next` parser to read this, the reader function will be called twice; once for `:name` and another one for `:age`. Note that in the case of joins, the parser will only be called for the join entry, but not for it's children (not automatically), for example: given the query `[:name :age {:parent [:name :gender]}]`. The reader function will be called 3 times now, one for `:name`, one for `:age` and one for `:parent`, when reading `:parent`, your reader code is responsible for checking that it has a children query, and do a recursive call (or anything else you want to do to handle this join). During this documentation, we are going to see many ways to implement those readers, but before we move on, I like to say the difference between `om.next` readers and `pathom` readers.
+`[:name :age]`. If you ask an `om.next` parser to read this the reader function will be called twice; once for `:name` and another one for `:age`. Note that in the case of joins, the parser will only be called for the join entry, but not for it's children (not automatically), for example: given the query `[:name :age {:parent [:name :gender]}]`. The reader function will be called 3 times now, one for `:name`, one for `:age` and one for `:parent`, when reading `:parent`, your reader code is responsible for checking that it has a children query, and do a recursive call (or anything else you want to do to handle this join). During this documentation, we are going to see many ways to implement those readers.
 
-In `om.next` a parse read functions has the following signature: `(fn [env dispatch-key params])`. In `pathom` we use a smaller version instead, which is: `(fn [env])`. This is major different, in `pathom` I decided to use a smaller signature, you can extract the `dispatch-key` and the `params` from the env, so there is no information loss:
+Please note the following differences between `om.next` readers and `pathom` readers: In `om.next` a parse read functions has the following signature: `(fn [env dispatch-key params])`. In `pathom` we use a smaller version instead, which is: `(fn [env])`. The `env` already contains the `dispatch-key` and `params`, so there is no loss of information.
 
 ```clojure
 (get-in env [:ast :dispatch-key]) ; => dispatch-key
 (get-in env [:ast :params]) ; => params
 ```
 
-Also, in `om.next` you need to return the value wrapped in `{:value "your-content"}`. In `pathom` this wrapping is done automatically for you, just return the final value.
+Also, in `om.next` you need to return the value wrapped in `{:value "your-content"}`. In `pathom` this wrapping is done automatically for you: just return the final value.
 
-Besides accepting the 1-arity function, Clojure maps and vectors are taken as readers, see [Map dispatcher](#map-dispatcher) and [Vector dispacher](#vector-dispatcher-aka-composed-readers) for information on those respectively.
+Readers can be 1-arity function, maps, or vectors. See <<map-dispatcher,Map dispatcher>> and <<vector-dispatcher,Vector dispacher>> for information on those respectively.
 
-To wrap up, here is a formal definiton for a `pathom` reader:
+Here is a formal Clojure Spec definiton for a `pathom` reader:
 
 ```clojure
 (s/def ::reader-map (s/map-of keyword? ::reader))
@@ -478,13 +476,9 @@ To wrap up, here is a formal definiton for a `pathom` reader:
         :list ::reader-seq))
 ```
 
-=== Pathom dispatching
+=== Functions as Readers
 
-It's time to look at pathom reader types: `function`, `map` and `vector`.
-
-==== Function dispatcher
-
-This is the simplest one, a function that will take the environment.
+These are quite simply a function that receive the env and resolve the read. More than one reader can exist in a chain, and the special return value `::p/continue` allows a reader to indicate it cannot resolve the given property (to continue processing the chain). Returning any value (including `nil`) you've resolved the property to that value.
 
 ```clojure
 (ns pathom-docs.fn-dispatch
@@ -505,9 +499,9 @@ This is the simplest one, a function that will take the environment.
 ; => {:name "Saul" :family "Goodman"}
 ```
 
-==== Map dispatcher
+=== Maps as Readers [[map-dispatcher]]
 
-The pattern you saw in the previous example, to dispatch from a fixed list of options, is very common, so `pathom` makes this easier by supporting `Clojure maps` as reader functions, using it we can re-write the previous example as:
+Since it is very common to want to resolve queries from a fixed set of possibilities we support defining a map as a reader. This is really just a "dispatch table" to functions that will receive `env`.  We can re-write the previous example as:
 
 ```clojure
 (ns pathom-docs.reader-map-dispatch
@@ -523,11 +517,13 @@ The pattern you saw in the previous example, to dispatch from a fixed list of op
 ; => {:name "Saul" :family "Goodman"}
 ```
 
-==== Vector dispatcher [aka composed readers]
+NOTE: The built-in Map Reader will return `::p/continue` if the map it is looking in does not contain the key for the attribute being resolved. This allows it to be safely used in a vector of readers.
 
-Composing readers enables the creation of readers that can be very specific about their responsibility, creating a chain of possibilities. Let's learn how it works by example:
+=== Vectors of Readers [aka composed readers] [[vector-dispatcher]]
 
-When you send a vector as a reader, pathom will walk each reader trying to parse the current attribute with it. In case the reader can handle the value, it will be returned, but it can also return the special value `::p/continue` to signal that *I could not handle this*, in which case pathom will try the next one on the list, until some reader respond or the readers are exhausted. Let's learn how it works by example:
+Using a vector for a reader is how you define a chain of readers. This allows you to define readers that serve a particular purpose. For example, some library author might want to supply readers to compose into your parser, or you might have different modules of database-specific readers that you'd like to keep separate.
+
+When pathom is trying to resolve a given attribute (say `:person/name`) in some context (say against the "Sam" entity) it will start at the beginning of the reader chain. The first reader will be asked to resolve the attribute.   If the reader can handle the value then it will be returned and no other readers will be consulted.  If it instead returns the special value `::p/continue` it is signalling that it could not resolve it (map readers do this if the attribute key is not in their map).  When this happens the next reader in the chain will be tried.
 
 ```clojure
 (ns pathom-docs.reader-vector-dispatch
@@ -547,15 +543,15 @@ When you send a vector as a reader, pathom will walk each reader trying to parse
 ; => {:name "Saul", :family "Goodman", :other :com.wsscode.pathom.core/not-found}
 ```
 
-Note that the `map dispatcher` will return `::p/continue` if the key is not present there, this way we can chain many of them together. By the end, if no reader can handle the key (all readers exhausted returning `::p/continue`), `::p/not-found` will be returned.
+If no reader in the chain returns a value (all readers reeturn `::p/continue`), then `::p/not-found` will be returned.
 
-When you write your readers, remember to return `::p/continue` when you figure you can't handle a given key. This way your reader will play nice in composition scenarios.
-
-Pathom also provides a set of built-in readers to handle common scenarios, check them at [[Entities|Entities]].
+IMPORTANT: When you write your readers you should always remember to return `::p/continue` when you can't handle a given key. This way your reader will play nice in composition scenarios.
 
 === Dynamic Readers
 
-Recursive calls are widespread during parsing, and Om.next makes it even easier by providing the current parser as part of the environment. The problem is that if you just call the same parser recursively, there is no chance to change how the reading process operates. To enable this to happen, `pathom` makes the reader part of the environment, this way you can replace the read function when doing a recursive parse call, for example:
+Recursive calls are widespread during parsing, and Om.next makes it even easier by providing the current parser as part of the environment. The problem is that if you just call the same parser recursively then there is no chance to change how the reading *process* operates.
+
+In order to improve this situation `pathom` makes the `:parser` *and* `r:eader` part of the environment, allowing you to *replace* it when doing a recursive parser call:
 
 ```clojure
 (ns pathom-dynamic-reader
@@ -578,19 +574,17 @@ Recursive calls are widespread during parsing, and Om.next makes it even easier 
 ; => {:current-user {:name "Saul" :family "Goodman"}}
 ```
 
-> Although pathom makes the change of readers possible, after working on a couple of projects I noticed I end up just having some set of readers that work for the entire thing, the support for it is not going away, I'm just trying to make you aware that it's not just because it's there that you should over-use it.
+NOTE: Replacing the reader when parsing is rarely needed in practice. The functional dispatch and vector of readers cover most common cases; however, replacing the reader could be useful in a scenario such as code splitting where the readers were not all available at the time of initial parser construction.
 
-== Entities
+== Entities [[Entities]]
 
-=== Abstract
+An entity to `pathom` is the graph node that is tracked as the current context, and from which information (attributes and graph edges to other entities) can be derived.  The current entity needs to be "map-like": It should work with all normal map-related functions like `get`, `contains?`, etc.
 
-Entities are one of the most important concepts to grasp about pathom. If you think of nodes on a graph, a node has its information and the connections with other nodes. Using this as a parallel, the `entity` in pathom is the representation of the current node value; this is where you are taking the information to navigate on the graph. The entity is usually a Clojure map, but that's not a hard constraint, you can use whatever you want to represent the current entity. You can use whatever you want to represent the current entity as long as it is something from which you can use to derive the information.
+As Pathom parses the query it tracks the current entity in the environment at key `::p/entity`. This makes it easier to write more reusable and flexible readers as we'll see later.
 
-Pathom uses a well-known key in the environment to track the "current" entity (::p/entity). This makes it easier to write more reusable and flexible readers as we'll see later.
+=== Using `p/entity`
 
-=== Using entity
-
-To get the current entity use the `p/entity` function:
+The `p/entity` function exists as a convenience for pulling the current entity from the parsing environment:
 
 ```clojure
 (ns com.wsscode.pathom-docs.using-entity
@@ -611,28 +605,9 @@ To get the current entity use the `p/entity` function:
 ; => #:character{:name "Rick", :age 60, :foobar :com.wsscode.pathom.core/not-found}
 ```
 
-When traversing your data graph (via the query) the "current" entity/node is exactly the desired source of information for the attributes of that element of the graph query (known in the parser as the `dispatch-key`). Moving the "pointer to the current data node" as you move through the graph query causes the two relational graphs to be walked at the same time.
+Note that the code above is a partial implementation of the <<MapReader, map-dispatcher>>.
 
-It is very common to read plain attributes (each of which will trigger a dispatch with that attribute in `key`) from maps,  so we have a helper for that called `map-reader`.
-
-=== Map reader [[map-reader]]
-
-Let's re-write our previous example, now using the `map-reader`:
-
-```clojure
-(ns com.wsscode.pathom-docs.using-entity-map-reader
-  (:require [com.wsscode.pathom.core :as p]))
-
-(def parser
-  (p/parser {::p/plugins [(p/env-plugin {::p/reader [p/map-reader]})]}))
-
-; we send the entity using ::p/entity key on environment
-(parser {::p/entity #:character{:name "Rick" :age 60}}
-        [:character/name :character/age :character/foobar])
-; => #:character{:name "Rick", :age 60, :foobar :com.wsscode.pathom.core/not-found}
-```
-
-The `map-reader` has the additional advantage of understanding how to walk a map that has a tree shape that already "fits" our query:
+The `map-reader` just has the additional ability to understand how to walk a map that has a tree shape that already "fits" our query:
 
 ```clojure
 (ns com.wsscode.pathom-docs.using-entity-map-reader
@@ -656,28 +631,27 @@ The `map-reader` has the additional advantage of understanding how to walk a map
 ;             :first-episode #:episode{:name "Pilot", :number 1}}
 ```
 
-I encourage you to check the `map-reader` implementation, it's not much longer than our previous one, and will give you a better understanding of how it runs.
+Now that you understand where the entity context is tracked I encourage you to check the `p/map-reader` implementation. It's not very long and will give you a better understanding of all of the concepts covered so far.
 
-=== Understanding pathom joins
+=== Understanding Joins
 
-Now that we saw some ways to work with the current entity, it's time to see how to navigate between them. You can look at the function `p/join` as a way to set the current entity. The core principle of `join` can be implemented as follows:
+The other significant task when processing a graph query is walking a graph edge to another entity (or entities) when we find a join.
+
+The subquery for a join is in the `:query` of the environment. Essentially it is a recursive step where we run the parser on the subquery while replacing the "current entity":
 
 ```clojure
 (defn join [entity {:keys [parser query] :as env}]
   (parser (assoc env ::p/entity entity) query))
 ```
 
-It simply does a recursive step for the given entity on the environment's current subquery.
+The real pathom implementation handles some additional scenarios: like the *empty sub-query* case (it returns the full entity), the special `*` query (so you can combine the whole entity + extra computed attributes), and union queries.
 
-The pathom implementation handles the *empty sub-query* case (it returns the full entity) and handles the special `*` value (so you can combine the whole entity + extra computed attributes). Pathom `join` also handles union queries cases, but more on that later.
-
-The following example demonstrates how to use the `map-reader` in combination with computed attributes and joins.
+The following example shows how to use `p/join` to "invent" a relation that can then be queried:
 
 ```clojure
 (ns com.wsscode.pathom-docs.using-entity-map-reader
   (:require [com.wsscode.pathom.core :as p]))
 
-; let's get rick into a variable
 (def rick
   #:character{:name          "Rick"
               :age           60
@@ -685,37 +659,48 @@ The following example demonstrates how to use the `map-reader` in combination wi
                               #:character{:name "Summer" :age 17}]
               :first-episode #:episode{:name "Pilot" :season 1 :number 1}})
 
-; an external data set so we can do a join
 (def char-name->voice
+  "Relational information representing edges from character names to actors"
   {"Rick"   #:actor{:name "Justin Roiland" :nationality "US"}
    "Morty"  #:actor{:name "Justin Roiland" :nationality "US"}
    "Summer" #:actor{:name "Spencer Grammer" :nationality "US"}})
 
-; this is our computed attributes, stuff to look for when the entity doesn't contain the requested
-; attribute
 (def computed
-  {:character/voice
+  {:character/voice ; support an invented join attribute
    (fn [env]
      (let [{:character/keys [name]} (p/entity env)
            voice (get char-name->voice name)]
        (p/join voice env)))})
 
 (def parser
-  ; note we have both readers now, map and computed
+  ; process with map-reader first, then try with computed
   (p/parser {::p/plugins [(p/env-plugin {::p/reader [p/map-reader computed]})]}))
 
-(parser {::p/entity rick}
+(parser {::p/entity rick} ; start with rick (as current entity)
         '[:character/name
-          ; the join enables us to query exactly what we need from the node
           {:character/voice [:actor/name]}
-          ; two new things going on here, the * will ask for all attributes on the family nodes
-          ; also by not specifying the query for :character/voice it will return the entity itself
           {:character/family [* :character/voice]}])
 ```
 
-=== Attribute dependency
+There are three different scenarios demonstrated in the above query:
 
-It is possible that the current entity will need to obtain some of its information from various sources. For example, in some cases, a computed attribute will itself need to re-invoke the processing chain to compute some subquery attribute. This can be done using `entity` with a second argument as shown in the following example:
+. Using the invented join property in a normal join. This allows for a subquery that constrains the data returned (from the actor in this case).
+. Using the `*` in a query, which returns all "known" attributes of the "current contextual" entity.
+. Using an additional (non-joined) `:character/voice` with `*` "adds in" that additional information. When a property is queried for that is processed via `p/join` then the entire entity will be returned even though there is no subquery.
+
+=== Dependent Attributes
+
+When computing attributes it is possible that you might need some other attribute for the current context that is *also* computed. You could hard-code a solution, but that would create all sorts of static code problems that could be difficult to manage as your code evolves: changes to the readers, for example, could easily break it and lead to difficult bugs.
+
+Instead, it is important that readers be able to resolve attributes they need from the "current context" in an abstract manner (i.e. the same way that they query itself is being resolved). The `p/entity` function has an additional arity for handling this exact case. You pass it a list of attributes that should be "made available" on the current entity, and it will use the parser to ensure that they are there (if possible):
+
+```
+(let [e (p/entity env [:x])]
+   ; e now has :x on it if possible, even if it is computed elsewhere
+   ...)
+```
+
+The following example shows this in context:
 
 ```clojure
 (ns pathom-docs.entity-attribute-dependency
@@ -729,9 +714,7 @@ It is possible that the current entity will need to obtain some of its informati
 
    :invite
    (fn [env]
-     ; the invite requires the computed property `:greet`, so we can send a query
-     ; to the p/entity to enforce the query to be realized with the entity, making
-     ; othewise it would not be available
+     ; requires the computed property `:greet`, which might not have been computed into the current context yet.
      (let [{:keys [greet]} (p/entity env [:greet])]
        (str greet " Come to visit us in Neverland!")))})
 
@@ -743,8 +726,6 @@ It is possible that the current entity will need to obtain some of its informati
         [:invite])
 ; => {:invite "Hello Mary! Come to visit us in Neverland!"}
 ```
-
-Note that this works by recursively invoking the parser.
 
 There is a variant `p/entity!` that raises an error if your desired attributes are not found. It's recommended to use the enforced version if you need the given attributes, as it will give your user a better error message.
 
@@ -782,25 +763,26 @@ If the parse fails on an enforced attribute you will get an exception. For examp
 CompilerException clojure.lang.ExceptionInfo: Entity attributes #{:character/name} could not be realized #:com.wsscode.pathom.core{:entity #:character{:nam "Mary"}, :path [:invite :greet], :missing-attributes #{:character/name}}
 ```
 
-Another important point to remember about computed attributes: if they require IO or intense computation you should do some caching to improve parsing performance, remember they can be called many times for a given query depending on your data interdependency. See [[Request caching|Request caching]] for more details on that.
+IMPORTANT: If computed attributes require IO or intense computation you should consider adding caching to improve parsing performance. Remember that a given query might traverse the same node more than once! Imagine a query that asks for your friends and co-workers. When there is this kind of overlap the same computational code may run more than once. See <<RequestCaching,Request Caching>> for more details.
 
 === Atom entities
 
-Entities can also be atoms, this is a useful caching mechanism that allows for a reader to add information into the current entity without having to make a join.
+As you move from node to node, you can choose to wrap the new contextual entity in an atom. This can be used as a narrow kind of caching mechanism that allows for a reader to add information into the current entity as it computes it, but which is valid for only
+the processing of the current entity (is lost as soon as the next join is followed). Therefore, this won't help with the overhead of re-visiting the same entity more than once when processing different parts of the same query.
 
-The built-in function `p/entity` always returns a Clojure map, if the entity is an atom it will deref it automatically.
+NOTE: The built-in function `p/entity` always returns a Clojure map, if the entity is an atom it will deref it automatically.
 
-Let's see an example using an entity atom:
+Here is an example using an entity atom:
 
 ```clojure
 include::../src/com/wsscode/pathom/book/entities/atom_entities.cljc[]
 ```
 
-You can think atom entities as a narrow type of caching, valid only for the processing of the current entity.
-
 === Union queries
 
-Sometimes we need to handle heterogeneous nodes, nodes that depending on its type you want a different query. Union queries solve these cases. A common place for union queries are searching, let's see an example where a search can be a user, a movie or a book.
+Union queries allow us to handle edges that lead to heterogeneous nodes. For example a to-many relation for media that could result in a book or movie. Following such an edge requires that we have a different *subquery* depending on what we *actually* find in the database.
+
+Here is an example where we want to use a query that will search to find a user, a movie or a book:
 
 ```clojure
 (ns pathom-docs.entity-union
@@ -827,7 +809,7 @@ Sometimes we need to handle heterogeneous nodes, nodes that depending on its typ
 ```
 
 Of course, unions need to have a way to determine which path to go based on the entity at hand. In the example above we used the `:type` (a key on the entity) to determine which branch to follow.
-The value of `::p/union-path` can be a keyword (from something inside entity or a computed attribute) or a function (that takes `env` and returns the correct key (type) to use for the union query).
+The value of `::p/union-path` can be a keyword (from something inside entity or a computed attribute) or a function (that takes `env` and returns the correct key (e.g. `:book`) to use for the union query).
 
 If you want `::p/union-path` to be more contextual you can of course set it in the `env` during the join process, as in the next example:
 
@@ -1078,7 +1060,7 @@ To handle mutations, you can send the `:mutate` param to the parser.
   )
 ----
 
-== Request caching
+== Request Caching [[RequestCaching]]
 
 As your queries grow, there are more and more optimizations that you can do avoid unnecessary IO or heavy computations. Here we are going to talk about a `request cache`, which is a fancy name for an atom that is initialized on every query and stays on the environment so you can share the cache across nodes. Let's see how we can use that to speed up our query processing:
 
