@@ -765,7 +765,7 @@ CompilerException clojure.lang.ExceptionInfo: Entity attributes #{:character/nam
 
 IMPORTANT: If computed attributes require IO or intense computation you should consider adding caching to improve parsing performance. Remember that a given query might traverse the same node more than once! Imagine a query that asks for your friends and co-workers. When there is this kind of overlap the same computational code may run more than once. See <<RequestCaching,Request Caching>> for more details.
 
-=== Atom entities
+=== Atom entities [[atom-entities]]
 
 As you move from node to node, you can choose to wrap the new contextual entity in an atom. This can be used as a narrow kind of caching mechanism that allows for a reader to add information into the current entity as it computes it, but which is valid for only
 the processing of the current entity (is lost as soon as the next join is followed). Therefore, this won't help with the overhead of re-visiting the same entity more than once when processing different parts of the same query.
@@ -1669,6 +1669,36 @@ reader to lookup the attributes. This index is built by looking at the output fo
 resolver when you add it, it will use each root output attribute and save that resolver
 as a path to that attribute, given that input. It kind of inverts the order of things,
 it puts the output attribute at the front, and then the path to get to it.
+
+Let's do an exercise and see how connect traverses this index in a practical example:
+
+Given we have this index (oir):
+
+[source,clojure]
+----
+include::../src/com/wsscode/pathom/book/connect/index_oir_example.cljc[]
+----
+
+Now if you try to run the query:
+
+```clojure
+[:name]
+```
+
+So we look on the index for `:name`, and we get `{#{:id} #{thing-by-id}}`, now we try
+to match the current entity attribute keys with the sets, to see if we have enough
+data to call some of then. In this case we don't, so it will fail because we don't have
+enough data.
+
+```clojure
+[{[:id 123] [:name]}]
+```
+
+This time set an id, our initial context is `{:id 123}`. This time we have the `:id`, so
+it will match with the input set `#{:id}`, and will call the resolver `thing-by-id` with
+that input to figure the name. Connect uses <<atom-entities,atom entities>>, when it
+gets the return from the resolver it merges it back on the entities, making all data
+returned from the resolver available to access new attributes as needed.
 
 === `index-io`
 
