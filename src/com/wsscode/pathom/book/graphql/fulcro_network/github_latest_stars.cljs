@@ -60,7 +60,7 @@
 
 (defn new-client [token]
   (fulcro/new-fulcro-client
-    :parser
+    :query-interpreter
     (p/parser (-> map-db/parser-config
                   (assoc :mutate fulcro/mutate)))
 
