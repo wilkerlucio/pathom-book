@@ -1,8 +1,6 @@
 (ns com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars
   (:require [com.wsscode.pathom.book.ui.util :as ui]
             [com.wsscode.pathom.fulcro.network :as pfn]
-            [com.wsscode.pathom.core :as p]
-            [com.wsscode.pathom.map-db :as map-db]
             [fulcro.client :as fulcro]
             [fulcro.client.data-fetch :as df]
             [fulcro.client.dom :as dom]
@@ -60,10 +58,6 @@
 
 (defn new-client [token]
   (fulcro/new-fulcro-client
-    :query-interpreter
-    (p/parser (-> map-db/parser-config
-                  (assoc :mutate fulcro/mutate)))
-
     :networking
     {:remote
      (pfn/graphql-network
