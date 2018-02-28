@@ -2925,8 +2925,6 @@ the GraphQL is generated, but they are restored once the result is parsed back.<
 <pre class="CodeRay highlight"><code data-lang="clojure">(<span class="keyword">ns</span> <span class="namespace">com.wsscode.pathom.book.graphql.fulcro-network.github-latest-stars</span>
   (<span class="symbol">:require</span> [com.wsscode.pathom.book.ui.util <span class="symbol">:as</span> ui]
             [com.wsscode.pathom.fulcro.network <span class="symbol">:as</span> pfn]
-            [com.wsscode.pathom.core <span class="symbol">:as</span> p]
-            [com.wsscode.pathom.map-db <span class="symbol">:as</span> map-db]
             [fulcro.client <span class="symbol">:as</span> fulcro]
             [fulcro.client.data-fetch <span class="symbol">:as</span> df]
             [fulcro.client.dom <span class="symbol">:as</span> dom]
@@ -2984,10 +2982,6 @@ the GraphQL is generated, but they are restored once the result is parsed back.<
 
 (<span class="keyword">defn</span> <span class="function">new-client</span> [token]
   (fulcro/new-fulcro-client
-    <span class="symbol">:query-interpreter</span>
-    (p/parser (<span class="keyword">-&gt;</span> map-db/parser-config
-                  (<span class="keyword">assoc</span> <span class="symbol">:mutate</span> fulcro/mutate)))
-
     <span class="symbol">:networking</span>
     {<span class="symbol">:remote</span>
      (pfn/graphql-network
@@ -3176,7 +3170,7 @@ and see the GraphQL equivalent been generated on the right.</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2018-02-26 23:27:22 -03
+Last updated 2018-02-27 22:49:07 -03
 </div>
 </div>
 </body>
